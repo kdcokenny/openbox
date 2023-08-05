@@ -19,11 +19,11 @@ from uuid import uuid4
 import aiohttp
 import requests  # type: ignore
 from typing_extensions import Self
-from websockets.client import WebSocketClientProtocol
-from websockets.client import connect as ws_connect
-from websockets.exceptions import ConnectionClosedError
-from websockets.sync.client import ClientConnection
-from websockets.sync.client import connect as ws_connect_sync
+from openbox.websockets.client import WebSocketClientProtocol
+from openbox.websockets.client import connect as ws_connect
+from openbox.websockets.exceptions import ConnectionClosedError
+from openbox.websockets.sync.client import ClientConnection
+from openbox.websockets.sync.client import connect as ws_connect_sync
 
 from openbox.box import BaseBox
 from openbox.config import settings
