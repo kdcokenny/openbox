@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "openbox"
+version = "0.1.0"
+description = ""
+authors = ["kdcokenny <kenny@kdco.llc>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-dotenv = "^1.0.0"
+pydantic = "^2.1.1"
+websockets = "^11.0.3"
+aiohttp = "^3.8.5"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+pre-commit = "^3.3.3"
+ruff = "^0.0.282"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+
+[tool.isort]
+profile = "black"
+known_third_party = ["ruff", "flake8"]
+line_length = 79
+
+[tool.flake8]
+ignore = "E203, W503"
+
+[tool.black]
+line-length = 79
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 79
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
