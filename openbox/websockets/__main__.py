@@ -13,7 +13,6 @@ except ImportError:  # Windows has no `readline` normally
     pass
 
 from .sync.client import ClientConnection, connect
-from .version import version as websockets_version
 
 
 if sys.platform == "win32":
@@ -36,13 +35,20 @@ if sys.platform == "win32":
             raise RuntimeError("unable to obtain stdout handle")
 
         cur_mode = ctypes.c_uint()
-        if ctypes.windll.kernel32.GetConsoleMode(handle, ctypes.byref(cur_mode)) == 0:
+        if (
+            ctypes.windll.kernel32.GetConsoleMode(
+                handle, ctypes.byref(cur_mode)
+            )
+            == 0
+        ):
             raise RuntimeError("unable to query current console mode")
 
         # ctypes ints lack support for the required bit-OR operation.
         # Temporarily convert to Py int, do the OR and convert back.
         py_int_mode = int.from_bytes(cur_mode, sys.byteorder)
-        new_mode = ctypes.c_uint(py_int_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+        new_mode = ctypes.c_uint(
+            py_int_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        )
 
         if ctypes.windll.kernel32.SetConsoleMode(handle, new_mode) == 0:
             raise RuntimeError("unable to set console mode")
@@ -80,7 +86,9 @@ def print_over_input(string: str) -> None:
     sys.stdout.flush()
 
 
-def print_incoming_messages(websocket: ClientConnection, stop: threading.Event) -> None:
+def print_incoming_messages(
+    websocket: ClientConnection, stop: threading.Event
+) -> None:
     for message in websocket:
         if isinstance(message, str):
             print_during_input("< " + message)
@@ -109,7 +117,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.version:
-        print(f"websockets {websockets_version}")
+        print(f"websockets n/a")
         return
 
     if args.uri is None:
@@ -138,7 +146,9 @@ def main() -> None:
     stop = threading.Event()
 
     # Start the thread that reads messages from the connection.
-    thread = threading.Thread(target=print_incoming_messages, args=(websocket, stop))
+    thread = threading.Thread(
+        target=print_incoming_messages, args=(websocket, stop)
+    )
     thread.start()
 
     # Read from stdin in the main thread in order to receive signals.

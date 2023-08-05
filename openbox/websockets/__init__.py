@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from .imports import lazy_import
-from .version import version as __version__  # noqa: F401
 
 
 __all__ = [

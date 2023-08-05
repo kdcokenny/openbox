@@ -3,7 +3,6 @@ from __future__ import annotations
 import sys
 
 from .imports import lazy_import
-from .version import version as websockets_version
 
 
 # For backwards compatibility:
@@ -27,4 +26,4 @@ __all__ = ["USER_AGENT"]
 
 
 PYTHON_VERSION = "{}.{}".format(*sys.version_info)
-USER_AGENT = f"Python/{PYTHON_VERSION} websockets/{websockets_version}"
+USER_AGENT = f"Python/{PYTHON_VERSION} websockets/nAn"
