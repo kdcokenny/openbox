@@ -10,7 +10,7 @@ from pydantic import BaseSettings
 load_dotenv("./.env")
 
 
-class CodeBoxSettings(BaseSettings):
+class CodeBoxSettings(BaseSettings):  # type: ignore
     """
     CodeBox API Config
     """

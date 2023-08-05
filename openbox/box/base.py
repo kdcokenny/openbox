@@ -8,7 +8,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from localbox.schema import CodeBoxFile, CodeBoxOutput, CodeBoxStatus
+from openbox.schema import CodeBoxFile, CodeBoxOutput, CodeBoxStatus
 
 
 class BaseBox(ABC):

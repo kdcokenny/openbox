@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import List, Optional, Union
 from uuid import uuid4
 
-import aiohttp  # type: ignore
+import aiohttp
 import requests  # type: ignore
 from typing_extensions import Self
 from websockets.client import WebSocketClientProtocol
@@ -25,9 +25,9 @@ from websockets.exceptions import ConnectionClosedError
 from websockets.sync.client import ClientConnection
 from websockets.sync.client import connect as ws_connect_sync
 
-from localbox.box import BaseBox
-from localbox.config import settings
-from localbox.schema import CodeBoxFile, CodeBoxOutput, CodeBoxStatus
+from openbox.box import BaseBox
+from openbox.config import settings
+from openbox.schema import CodeBoxFile, CodeBoxOutput, CodeBoxStatus
 
 
 class JupyterBox(BaseBox):
