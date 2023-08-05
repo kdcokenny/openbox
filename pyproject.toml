@@ -8,8 +8,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 python-dotenv = "^1.0.0"
-websockets = "^11.0.3"
-aiohttp = "^3.8.5"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
