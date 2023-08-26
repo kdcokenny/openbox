@@ -45,26 +45,20 @@ __all__ = ["ClientProtocol"]
 
 
 class ClientProtocol(Protocol):
-    """
-    Sans-I/O implementation of a WebSocket client connection.
+    """Sans-I/O implementation of a WebSocket client connection.
 
-    Args:
-        wsuri: URI of the WebSocket server, parsed
-            with :func:`~websockets.uri.parse_uri`.
-        origin: value of the ``Origin`` header. This is useful when connecting
-            to a server that validates the ``Origin`` header to defend against
-            Cross-Site WebSocket Hijacking attacks.
-        extensions: list of supported extensions, in order in which they
-            should be tried.
-        subprotocols: list of supported subprotocols, in order of decreasing
-            preference.
-        state: initial state of the WebSocket connection.
-        max_size: maximum size of incoming messages in bytes;
-            :obj:`None` disables the limit.
-        logger: logger for this connection;
-            defaults to ``logging.getLogger("websockets.client")``;
-            see the :doc:`logging guide <../../topics/logging>` for details.
-
+    Args:     wsuri: URI of the WebSocket server, parsed         with
+    :func:`~websockets.uri.parse_uri`.     origin: value of the ``Origin``
+    header. This is useful when connecting         to a server that validates
+    the ``Origin`` header to defend against         Cross-Site WebSocket
+    Hijacking attacks.     extensions: list of supported extensions, in order
+    in which they         should be tried.     subprotocols: list of supported
+    subprotocols, in order of decreasing         preference.     state: initial
+    state of the WebSocket connection.     max_size: maximum size of incoming
+    messages in bytes;         :obj:`None` disables the limit.     logger:
+    logger for this connection;         defaults to
+    ``logging.getLogger("websockets.client")``;         see the :doc:`logging
+    guide <../../topics/logging>` for details.
     """
 
     def __init__(
@@ -91,16 +85,14 @@ class ClientProtocol(Protocol):
         self.key = generate_key()
 
     def connect(self) -> Request:
-        """
-        Create a handshake request to open a connection.
+        """Create a handshake request to open a connection.
 
         You must send the handshake request with :meth:`send_request`.
 
         You can modify it before sending it, for example to add HTTP headers.
 
-        Returns:
-            Request: WebSocket handshake request event to send to the server.
-
+        Returns:     Request: WebSocket handshake request event to send to the
+        server.
         """
         headers = Headers()
 
@@ -135,15 +127,12 @@ class ClientProtocol(Protocol):
         return Request(self.wsuri.resource_name, headers)
 
     def process_response(self, response: Response) -> None:
-        """
-        Check a handshake response.
+        """Check a handshake response.
 
-        Args:
-            request: WebSocket handshake response received from the server.
+        Args:     request: WebSocket handshake response received from the
+        server.
 
-        Raises:
-            InvalidHandshake: if the handshake response is invalid.
-
+        Raises:     InvalidHandshake: if the handshake response is invalid.
         """
 
         if response.status_code != 101:
@@ -187,13 +176,11 @@ class ClientProtocol(Protocol):
         self.subprotocol = self.process_subprotocol(headers)
 
     def process_extensions(self, headers: Headers) -> List[Extension]:
-        """
-        Handle the Sec-WebSocket-Extensions HTTP response header.
+        """Handle the Sec-WebSocket-Extensions HTTP response header.
 
         Check that each extension is supported, as well as its parameters.
 
-        :rfc:`6455` leaves the rules up to the specification of each
-        extension.
+        :rfc:`6455` leaves the rules up to the specification of each extension.
 
         To provide this level of flexibility, for each extension accepted by
         the server, we check for a match with each extension available in the
@@ -201,21 +188,17 @@ class ClientProtocol(Protocol):
 
         If several variants of the same extension are accepted by the server,
         it may be configured several times, which won't make sense in general.
-        Extensions must implement their own requirements. For this purpose,
-        the list of previously accepted extensions is provided.
+        Extensions must implement their own requirements. For this purpose, the
+        list of previously accepted extensions is provided.
 
         Other requirements, for example related to mandatory extensions or the
         order of extensions, may be implemented by overriding this method.
 
-        Args:
-            headers: WebSocket handshake response headers.
+        Args:     headers: WebSocket handshake response headers.
 
-        Returns:
-            List[Extension]: List of accepted extensions.
+        Returns:     List[Extension]: List of accepted extensions.
 
-        Raises:
-            InvalidHandshake: to abort the handshake.
-
+        Raises:     InvalidHandshake: to abort the handshake.
         """
         accepted_extensions: List[Extension] = []
 
@@ -260,17 +243,13 @@ class ClientProtocol(Protocol):
         return accepted_extensions
 
     def process_subprotocol(self, headers: Headers) -> Optional[Subprotocol]:
-        """
-        Handle the Sec-WebSocket-Protocol HTTP response header.
+        """Handle the Sec-WebSocket-Protocol HTTP response header.
 
         If provided, check that it contains exactly one supported subprotocol.
 
-        Args:
-            headers: WebSocket handshake response headers.
+        Args:     headers: WebSocket handshake response headers.
 
-        Returns:
-           Optional[Subprotocol]: Subprotocol, if one was selected.
-
+        Returns:    Optional[Subprotocol]: Subprotocol, if one was selected.
         """
         subprotocol: Optional[Subprotocol] = None
 
@@ -296,12 +275,9 @@ class ClientProtocol(Protocol):
         return subprotocol
 
     def send_request(self, request: Request) -> None:
-        """
-        Send a handshake request to the server.
+        """Send a handshake request to the server.
 
-        Args:
-            request: WebSocket handshake request event.
-
+        Args:     request: WebSocket handshake request event.
         """
         if self.debug:
             self.logger.debug("> GET %s HTTP/1.1", request.path)

@@ -18,10 +18,8 @@ __all__ = ["Headers", "HeadersLike", "MultipleValuesError"]
 
 
 class MultipleValuesError(LookupError):
-    """
-    Exception raised when :class:`Headers` has more than one value for a key.
-
-    """
+    """Exception raised when :class:`Headers` has more than one value for a
+    key."""
 
     def __str__(self) -> str:
         # Implement the same logic as KeyError_str in Objects/exceptions.c.
@@ -31,8 +29,7 @@ class MultipleValuesError(LookupError):
 
 
 class Headers(MutableMapping[str, str]):
-    """
-    Efficient data structure for manipulating HTTP headers.
+    """Efficient data structure for manipulating HTTP headers.
 
     A :class:`list` of ``(name, values)`` is inefficient for lookups.
 
@@ -45,16 +42,16 @@ class Headers(MutableMapping[str, str]):
     In order to account for multiple values with minimal hassle,
     :class:`Headers` follows this logic:
 
-    - When getting a header with ``headers[name]``:
-        - if there's no value, :exc:`KeyError` is raised;
-        - if there's exactly one value, it's returned;
-        - if there's more than one value, :exc:`MultipleValuesError` is raised.
+    - When getting a header with ``headers[name]``:     - if there's no value,
+    :exc:`KeyError` is raised;     - if there's exactly one value, it's
+    returned;     - if there's more than one value, :exc:`MultipleValuesError`
+    is raised.
 
     - When setting a header with ``headers[name] = value``, the value is
-      appended to the list of values for that header.
+    appended to the list of values for that header.
 
     - When deleting a header with ``del headers[name]``, all values for that
-      header are removed (this is slow).
+    header are removed (this is slow).
 
     Other methods for manipulating headers are consistent with this logic.
 
@@ -63,9 +60,8 @@ class Headers(MutableMapping[str, str]):
 
     Two methods support manipulating multiple values explicitly:
 
-    - :meth:`get_all` returns a list of all values for a header;
-    - :meth:`raw_items` returns an iterator of ``(name, values)`` pairs.
-
+    - :meth:`get_all` returns a list of all values for a header; -
+    :meth:`raw_items` returns an iterator of ``(name, values)`` pairs.
     """
 
     __slots__ = ["_dict", "_list"]
@@ -128,18 +124,12 @@ class Headers(MutableMapping[str, str]):
         return self._dict == other._dict
 
     def clear(self) -> None:
-        """
-        Remove all headers.
-
-        """
+        """Remove all headers."""
         self._dict = {}
         self._list = []
 
     def update(self, *args: HeadersLike, **kwargs: str) -> None:
-        """
-        Update from a :class:`Headers` instance and/or keyword arguments.
-
-        """
+        """Update from a :class:`Headers` instance and/or keyword arguments."""
         args = tuple(
             arg.raw_items() if isinstance(arg, Headers) else arg for arg in args
         )
@@ -148,29 +138,21 @@ class Headers(MutableMapping[str, str]):
     # Methods for handling multiple values
 
     def get_all(self, key: str) -> List[str]:
-        """
-        Return the (possibly empty) list of all values for a header.
+        """Return the (possibly empty) list of all values for a header.
 
-        Args:
-            key: header name.
-
+        Args:     key: header name.
         """
         return self._dict.get(key.lower(), [])
 
     def raw_items(self) -> Iterator[Tuple[str, str]]:
-        """
-        Return an iterator of all values as ``(name, value)`` pairs.
-
-        """
+        """Return an iterator of all values as ``(name, value)`` pairs."""
         return iter(self._list)
 
 
 # copy of _typeshed.SupportsKeysAndGetItem.
 class SupportsKeysAndGetItem(Protocol):  # pragma: no cover
-    """
-    Dict-like types with ``keys() -> str`` and ``__getitem__(key: str) -> str`` methods.
-
-    """
+    """Dict-like types with ``keys() -> str`` and ``__getitem__(key: str) ->
+    str`` methods."""
 
     def keys(self) -> Iterable[str]:
         ...
@@ -185,10 +167,8 @@ HeadersLike = Union[
     Iterable[Tuple[str, str]],
     SupportsKeysAndGetItem,
 ]
-"""
-Types accepted where :class:`Headers` is expected.
+"""Types accepted where :class:`Headers` is expected.
 
-In addition to :class:`Headers` itself, this includes dict-like types where both
-keys and values are :class:`str`.
-
+In addition to :class:`Headers` itself, this includes dict-like types where
+both keys and values are :class:`str`.
 """

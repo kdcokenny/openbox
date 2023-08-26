@@ -123,20 +123,13 @@ BytesLike = bytes, bytearray, memoryview
 
 @dataclasses.dataclass
 class Frame:
-    """
-    WebSocket frame.
+    """WebSocket frame.
 
-    Attributes:
-        opcode: Opcode.
-        data: Payload data.
-        fin: FIN bit.
-        rsv1: RSV1 bit.
-        rsv2: RSV2 bit.
-        rsv3: RSV3 bit.
+    Attributes:     opcode: Opcode.     data: Payload data.     fin: FIN bit.
+    rsv1: RSV1 bit.     rsv2: RSV2 bit.     rsv3: RSV3 bit.
 
     Only these fields are needed. The MASK bit, payload length and masking-key
     are handled on the fly when parsing and serializing frames.
-
     """
 
     opcode: Opcode
@@ -147,10 +140,7 @@ class Frame:
     rsv3: bool = False
 
     def __str__(self) -> str:
-        """
-        Return a human-readable representation of a frame.
-
-        """
+        """Return a human-readable representation of a frame."""
         coding = None
         length = f"{len(self.data)} byte{'' if len(self.data) == 1 else 's'}"
         non_final = "" if self.fin else "continued"
@@ -202,25 +192,22 @@ class Frame:
         max_size: Optional[int] = None,
         extensions: Optional[Sequence[extensions.Extension]] = None,
     ) -> Generator[None, None, Frame]:
-        """
-        Parse a WebSocket frame.
+        """Parse a WebSocket frame.
 
         This is a generator-based coroutine.
 
-        Args:
-            read_exact: generator-based coroutine that reads the requested
-                bytes or raises an exception if there isn't enough data.
-            mask: whether the frame should be masked i.e. whether the read
-                happens on the server side.
-            max_size: maximum payload size in bytes.
-            extensions: list of extensions, applied in reverse order.
+        Args:     read_exact: generator-based coroutine that reads the
+        requested         bytes or raises an exception if there isn't enough
+        data.     mask: whether the frame should be masked i.e. whether the
+        read         happens on the server side.     max_size: maximum payload
+        size in bytes.     extensions: list of extensions, applied in reverse
+        order.
 
-        Raises:
-            EOFError: if the connection is closed without a full WebSocket frame.
-            UnicodeDecodeError: if the frame contains invalid UTF-8.
-            PayloadTooBig: if the frame's payload size exceeds ``max_size``.
-            ProtocolError: if the frame contains incorrect values.
-
+        Raises:     EOFError: if the connection is closed without a full
+        WebSocket frame.     UnicodeDecodeError: if the frame contains invalid
+        UTF-8.     PayloadTooBig: if the frame's payload size exceeds
+        ``max_size``.     ProtocolError: if the frame contains incorrect
+        values.
         """
         # Read the header.
         data = yield from read_exact(2)
@@ -276,17 +263,13 @@ class Frame:
         mask: bool,
         extensions: Optional[Sequence[extensions.Extension]] = None,
     ) -> bytes:
-        """
-        Serialize a WebSocket frame.
+        """Serialize a WebSocket frame.
 
-        Args:
-            mask: whether the frame should be masked i.e. whether the write
-                happens on the client side.
-            extensions: list of extensions, applied in order.
+        Args:     mask: whether the frame should be masked i.e. whether the
+        write         happens on the client side.     extensions: list of
+        extensions, applied in order.
 
-        Raises:
-            ProtocolError: if the frame contains incorrect values.
-
+        Raises:     ProtocolError: if the frame contains incorrect values.
         """
         self.check()
 
@@ -330,12 +313,9 @@ class Frame:
         return output.getvalue()
 
     def check(self) -> None:
-        """
-        Check that reserved bits and opcode have acceptable values.
+        """Check that reserved bits and opcode have acceptable values.
 
-        Raises:
-            ProtocolError: if a reserved bit or the opcode is invalid.
-
+        Raises:     ProtocolError: if a reserved bit or the opcode is invalid.
         """
         if self.rsv1 or self.rsv2 or self.rsv3:
             raise exceptions.ProtocolError("reserved bits must be 0")
@@ -348,8 +328,8 @@ class Frame:
 
 
 def prepare_data(data: Data) -> Tuple[int, bytes]:
-    """
-    Convert a string or byte-like object to an opcode and a bytes-like object.
+    """Convert a string or byte-like object to an opcode and a bytes-like
+    object.
 
     This function is designed for data frames.
 
@@ -359,9 +339,7 @@ def prepare_data(data: Data) -> Tuple[int, bytes]:
     If ``data`` is a bytes-like object, return ``OP_BINARY`` and a bytes-like
     object.
 
-    Raises:
-        TypeError: if ``data`` doesn't have a supported type.
-
+    Raises:     TypeError: if ``data`` doesn't have a supported type.
     """
     if isinstance(data, str):
         return OP_TEXT, data.encode("utf-8")
@@ -372,8 +350,7 @@ def prepare_data(data: Data) -> Tuple[int, bytes]:
 
 
 def prepare_ctrl(data: Data) -> bytes:
-    """
-    Convert a string or byte-like object to bytes.
+    """Convert a string or byte-like object to bytes.
 
     This function is designed for ping and pong frames.
 
@@ -382,9 +359,7 @@ def prepare_ctrl(data: Data) -> bytes:
 
     If ``data`` is a bytes-like object, return a :class:`bytes` object.
 
-    Raises:
-        TypeError: if ``data`` doesn't have a supported type.
-
+    Raises:     TypeError: if ``data`` doesn't have a supported type.
     """
     if isinstance(data, str):
         return data.encode("utf-8")
@@ -396,23 +371,17 @@ def prepare_ctrl(data: Data) -> bytes:
 
 @dataclasses.dataclass
 class Close:
-    """
-    Code and reason for WebSocket close frames.
+    """Code and reason for WebSocket close frames.
 
-    Attributes:
-        code: Close code.
-        reason: Close reason.
-
+    Attributes:     code: Close code.     reason: Close reason.
     """
 
     code: int
     reason: str
 
     def __str__(self) -> str:
-        """
-        Return a human-readable representation of a close code and reason.
-
-        """
+        """Return a human-readable representation of a close code and
+        reason."""
         if 3000 <= self.code < 4000:
             explanation = "registered"
         elif 4000 <= self.code < 5000:
@@ -428,16 +397,12 @@ class Close:
 
     @classmethod
     def parse(cls, data: bytes) -> Close:
-        """
-        Parse the payload of a close frame.
+        """Parse the payload of a close frame.
 
-        Args:
-            data: payload of the close frame.
+        Args:     data: payload of the close frame.
 
-        Raises:
-            ProtocolError: if data is ill-formed.
-            UnicodeDecodeError: if the reason isn't valid UTF-8.
-
+        Raises:     ProtocolError: if data is ill-formed. UnicodeDecodeError:
+        if the reason isn't valid UTF-8.
         """
         if len(data) >= 2:
             (code,) = struct.unpack("!H", data[:2])
@@ -451,20 +416,14 @@ class Close:
             raise exceptions.ProtocolError("close frame too short")
 
     def serialize(self) -> bytes:
-        """
-        Serialize the payload of a close frame.
-
-        """
+        """Serialize the payload of a close frame."""
         self.check()
         return struct.pack("!H", self.code) + self.reason.encode("utf-8")
 
     def check(self) -> None:
-        """
-        Check that the close code has a valid value for a close frame.
+        """Check that the close code has a valid value for a close frame.
 
-        Raises:
-            ProtocolError: if the close code is invalid.
-
+        Raises:     ProtocolError: if the close code is invalid.
         """
         if not (self.code in EXTERNAL_CLOSE_CODES or 3000 <= self.code < 5000):
             raise exceptions.ProtocolError("invalid status code")

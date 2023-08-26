@@ -17,12 +17,11 @@ __all__ = [
 # Public types used in the signature of public APIs
 
 Data = Union[str, bytes]
-"""Types supported in a WebSocket message:
-:class:`str` for a Text_ frame, :class:`bytes` for a Binary_.
+"""Types supported in a WebSocket message: :class:`str` for a Text_ frame,
+:class:`bytes` for a Binary_.
 
-.. _Text: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
-.. _Binary : https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
-
+.. _Text: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6 .. _Binary :
+https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
 """
 
 

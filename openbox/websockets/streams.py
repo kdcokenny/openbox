@@ -4,13 +4,10 @@ from typing import Generator
 
 
 class StreamReader:
-    """
-    Generator-based stream reader.
+    """Generator-based stream reader.
 
     This class doesn't support concurrent calls to :meth:`read_line`,
-    :meth:`read_exact`, or :meth:`read_to_eof`. Make sure calls are
-    serialized.
-
+    :meth:`read_exact`, or :meth:`read_to_eof`. Make sure calls are serialized.
     """
 
     def __init__(self) -> None:
@@ -18,20 +15,16 @@ class StreamReader:
         self.eof = False
 
     def read_line(self, m: int) -> Generator[None, None, bytes]:
-        """
-        Read a LF-terminated line from the stream.
+        """Read a LF-terminated line from the stream.
 
         This is a generator-based coroutine.
 
         The return value includes the LF character.
 
-        Args:
-            m: maximum number bytes to read; this is a security limit.
+        Args:     m: maximum number bytes to read; this is a security limit.
 
-        Raises:
-            EOFError: if the stream ends without a LF.
-            RuntimeError: if the stream ends in more than ``m`` bytes.
-
+        Raises:     EOFError: if the stream ends without a LF. RuntimeError: if
+        the stream ends in more than ``m`` bytes.
         """
         n = 0  # number of bytes to read
         p = 0  # number of bytes without a newline
@@ -52,17 +45,13 @@ class StreamReader:
         return r
 
     def read_exact(self, n: int) -> Generator[None, None, bytes]:
-        """
-        Read a given number of bytes from the stream.
+        """Read a given number of bytes from the stream.
 
         This is a generator-based coroutine.
 
-        Args:
-            n: how many bytes to read.
+        Args:     n: how many bytes to read.
 
-        Raises:
-            EOFError: if the stream ends in less than ``n`` bytes.
-
+        Raises:     EOFError: if the stream ends in less than ``n`` bytes.
         """
         assert n >= 0
         while len(self.buffer) < n:
@@ -75,17 +64,13 @@ class StreamReader:
         return r
 
     def read_to_eof(self, m: int) -> Generator[None, None, bytes]:
-        """
-        Read all bytes from the stream.
+        """Read all bytes from the stream.
 
         This is a generator-based coroutine.
 
-        Args:
-            m: maximum number bytes to read; this is a security limit.
+        Args:     m: maximum number bytes to read; this is a security limit.
 
-        Raises:
-            RuntimeError: if the stream ends in more than ``m`` bytes.
-
+        Raises:     RuntimeError: if the stream ends in more than ``m`` bytes.
         """
         while not self.eof:
             p = len(self.buffer)
@@ -97,11 +82,9 @@ class StreamReader:
         return r
 
     def at_eof(self) -> Generator[None, None, bool]:
-        """
-        Tell whether the stream has ended and all data was read.
+        """Tell whether the stream has ended and all data was read.
 
         This is a generator-based coroutine.
-
         """
         while True:
             if self.buffer:
@@ -113,39 +96,29 @@ class StreamReader:
             yield
 
     def feed_data(self, data: bytes) -> None:
-        """
-        Write data to the stream.
+        """Write data to the stream.
 
         :meth:`feed_data` cannot be called after :meth:`feed_eof`.
 
-        Args:
-            data: data to write.
+        Args:     data: data to write.
 
-        Raises:
-            EOFError: if the stream has ended.
-
+        Raises:     EOFError: if the stream has ended.
         """
         if self.eof:
             raise EOFError("stream ended")
         self.buffer += data
 
     def feed_eof(self) -> None:
-        """
-        End the stream.
+        """End the stream.
 
         :meth:`feed_eof` cannot be called more than once.
 
-        Raises:
-            EOFError: if the stream has ended.
-
+        Raises:     EOFError: if the stream has ended.
         """
         if self.eof:
             raise EOFError("stream ended")
         self.eof = True
 
     def discard(self) -> None:
-        """
-        Discard all buffered data, but don't end the stream.
-
-        """
+        """Discard all buffered data, but don't end the stream."""
         del self.buffer[:]

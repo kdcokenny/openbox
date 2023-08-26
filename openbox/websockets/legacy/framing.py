@@ -47,21 +47,16 @@ class Frame(NamedTuple):
         max_size: Optional[int] = None,
         extensions: Optional[Sequence[extensions.Extension]] = None,
     ) -> Frame:
-        """
-        Read a WebSocket frame.
+        """Read a WebSocket frame.
 
-        Args:
-            reader: Coroutine that reads exactly the requested number of
-                bytes, unless the end of file is reached.
-            mask: Whether the frame should be masked i.e. whether the read
-                happens on the server side.
-            max_size: Maximum payload size in bytes.
-            extensions: List of extensions, applied in reverse order.
+        Args:     reader: Coroutine that reads exactly the requested number of
+        bytes, unless the end of file is reached.     mask: Whether the frame
+        should be masked i.e. whether the read         happens on the server
+        side.     max_size: Maximum payload size in bytes.     extensions: List
+        of extensions, applied in reverse order.
 
-        Raises:
-            PayloadTooBig: If the frame exceeds ``max_size``.
-            ProtocolError: If the frame contains incorrect values.
-
+        Raises:     PayloadTooBig: If the frame exceeds ``max_size``.
+        ProtocolError: If the frame contains incorrect values.
         """
 
         # Read the header.
@@ -124,19 +119,14 @@ class Frame(NamedTuple):
         mask: bool,
         extensions: Optional[Sequence[extensions.Extension]] = None,
     ) -> None:
-        """
-        Write a WebSocket frame.
+        """Write a WebSocket frame.
 
-        Args:
-            frame: Frame to write.
-            write: Function that writes bytes.
-            mask: Whether the frame should be masked i.e. whether the write
-                happens on the client side.
-            extensions: List of extensions, applied in order.
+        Args:     frame: Frame to write.     write: Function that writes bytes.
+        mask: Whether the frame should be masked i.e. whether the write happens
+        on the client side.     extensions: List of extensions, applied in
+        order.
 
-        Raises:
-            ProtocolError: If the frame contains incorrect values.
-
+        Raises:     ProtocolError: If the frame contains incorrect values.
         """
         # The frame is written in a single call to write in order to prevent
         # TCP fragmentation. See #68 for details. This also makes it safe to
@@ -153,24 +143,17 @@ from ..frames import (  # noqa: E402, F401, I001
 
 
 def parse_close(data: bytes) -> Tuple[int, str]:
-    """
-    Parse the payload from a close frame.
+    """Parse the payload from a close frame.
 
-    Returns:
-        Close code and reason.
+    Returns:     Close code and reason.
 
-    Raises:
-        ProtocolError: If data is ill-formed.
-        UnicodeDecodeError: If the reason isn't valid UTF-8.
-
+    Raises:     ProtocolError: If data is ill-formed.     UnicodeDecodeError:
+    If the reason isn't valid UTF-8.
     """
     close = Close.parse(data)
     return close.code, close.reason
 
 
 def serialize_close(code: int, reason: str) -> bytes:
-    """
-    Serialize the payload for a close frame.
-
-    """
+    """Serialize the payload for a close frame."""
     return Close(code, reason).serialize()

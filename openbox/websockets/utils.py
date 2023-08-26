@@ -13,34 +13,24 @@ GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 
 def generate_key() -> str:
-    """
-    Generate a random key for the Sec-WebSocket-Key header.
-
-    """
+    """Generate a random key for the Sec-WebSocket-Key header."""
     key = secrets.token_bytes(16)
     return base64.b64encode(key).decode()
 
 
 def accept_key(key: str) -> str:
-    """
-    Compute the value of the Sec-WebSocket-Accept header.
+    """Compute the value of the Sec-WebSocket-Accept header.
 
-    Args:
-        key: value of the Sec-WebSocket-Key header.
-
+    Args:     key: value of the Sec-WebSocket-Key header.
     """
     sha1 = hashlib.sha1((key + GUID).encode()).digest()
     return base64.b64encode(sha1).decode()
 
 
 def apply_mask(data: bytes, mask: bytes) -> bytes:
-    """
-    Apply masking to the data of a WebSocket message.
+    """Apply masking to the data of a WebSocket message.
 
-    Args:
-        data: data to mask.
-        mask: 4-bytes mask.
-
+    Args:     data: data to mask.     mask: 4-bytes mask.
     """
     if len(mask) != 4:
         raise ValueError("mask must contain 4 bytes")

@@ -10,10 +10,7 @@ __all__ = ["Extension", "ClientExtensionFactory", "ServerExtensionFactory"]
 
 
 class Extension:
-    """
-    Base class for extensions.
-
-    """
+    """Base class for extensions."""
 
     name: ExtensionName
     """Extension identifier."""
@@ -24,52 +21,39 @@ class Extension:
         *,
         max_size: Optional[int] = None,
     ) -> frames.Frame:
-        """
-        Decode an incoming frame.
+        """Decode an incoming frame.
 
-        Args:
-            frame (Frame): incoming frame.
-            max_size: maximum payload size in bytes.
+        Args:     frame (Frame): incoming frame.     max_size: maximum payload
+        size in bytes.
 
-        Returns:
-            Frame: Decoded frame.
+        Returns:     Frame: Decoded frame.
 
-        Raises:
-            PayloadTooBig: if decoding the payload exceeds ``max_size``.
-
+        Raises:     PayloadTooBig: if decoding the payload exceeds
+        ``max_size``.
         """
         raise NotImplementedError
 
     def encode(self, frame: frames.Frame) -> frames.Frame:
-        """
-        Encode an outgoing frame.
+        """Encode an outgoing frame.
 
-        Args:
-            frame (Frame): outgoing frame.
+        Args:     frame (Frame): outgoing frame.
 
-        Returns:
-            Frame: Encoded frame.
-
+        Returns:     Frame: Encoded frame.
         """
         raise NotImplementedError
 
 
 class ClientExtensionFactory:
-    """
-    Base class for client-side extension factories.
-
-    """
+    """Base class for client-side extension factories."""
 
     name: ExtensionName
     """Extension identifier."""
 
     def get_request_params(self) -> List[ExtensionParameter]:
-        """
-        Build parameters to send to the server for this extension.
+        """Build parameters to send to the server for this extension.
 
-        Returns:
-            List[ExtensionParameter]: Parameters to send to the server.
-
+        Returns:     List[ExtensionParameter]: Parameters to send to the
+        server.
         """
         raise NotImplementedError
 
@@ -78,30 +62,21 @@ class ClientExtensionFactory:
         params: Sequence[ExtensionParameter],
         accepted_extensions: Sequence[Extension],
     ) -> Extension:
-        """
-        Process parameters received from the server.
+        """Process parameters received from the server.
 
-        Args:
-            params (Sequence[ExtensionParameter]): parameters received from
-                the server for this extension.
-            accepted_extensions (Sequence[Extension]): list of previously
-                accepted extensions.
+        Args:     params (Sequence[ExtensionParameter]): parameters received
+        from         the server for this extension.     accepted_extensions
+        (Sequence[Extension]): list of previously         accepted extensions.
 
-        Returns:
-            Extension: An extension instance.
+        Returns:     Extension: An extension instance.
 
-        Raises:
-            NegotiationError: if parameters aren't acceptable.
-
+        Raises:     NegotiationError: if parameters aren't acceptable.
         """
         raise NotImplementedError
 
 
 class ServerExtensionFactory:
-    """
-    Base class for server-side extension factories.
-
-    """
+    """Base class for server-side extension factories."""
 
     name: ExtensionName
     """Extension identifier."""
@@ -111,23 +86,17 @@ class ServerExtensionFactory:
         params: Sequence[ExtensionParameter],
         accepted_extensions: Sequence[Extension],
     ) -> Tuple[List[ExtensionParameter], Extension]:
-        """
-        Process parameters received from the client.
+        """Process parameters received from the client.
 
-        Args:
-            params (Sequence[ExtensionParameter]): parameters received from
-                the client for this extension.
-            accepted_extensions (Sequence[Extension]): list of previously
-                accepted extensions.
+        Args:     params (Sequence[ExtensionParameter]): parameters received
+        from         the client for this extension.     accepted_extensions
+        (Sequence[Extension]): list of previously         accepted extensions.
 
-        Returns:
-            Tuple[List[ExtensionParameter], Extension]: To accept the offer,
-            parameters to send to the client for this extension and an
-            extension instance.
+        Returns:     Tuple[List[ExtensionParameter], Extension]: To accept the
+        offer,     parameters to send to the client for this extension and an
+        extension instance.
 
-        Raises:
-            NegotiationError: to reject the offer, if parameters received from
-                the client aren't acceptable.
-
+        Raises:     NegotiationError: to reject the offer, if parameters
+        received from         the client aren't acceptable.
         """
         raise NotImplementedError

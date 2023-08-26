@@ -26,17 +26,13 @@ def is_credentials(value: Any) -> bool:
 
 
 class BasicAuthWebSocketServerProtocol(WebSocketServerProtocol):
-    """
-    WebSocket server protocol that enforces HTTP Basic Auth.
-
-    """
+    """WebSocket server protocol that enforces HTTP Basic Auth."""
 
     realm: str = ""
-    """
-    Scope of protection.
+    """Scope of protection.
 
-    If provided, it should contain only ASCII characters because the
-    encoding of non-ASCII characters is undefined.
+    If provided, it should contain only ASCII characters because the encoding
+    of non-ASCII characters is undefined.
     """
 
     username: Optional[str] = None
@@ -55,20 +51,16 @@ class BasicAuthWebSocketServerProtocol(WebSocketServerProtocol):
         super().__init__(*args, **kwargs)
 
     async def check_credentials(self, username: str, password: str) -> bool:
-        """
-        Check whether credentials are authorized.
+        """Check whether credentials are authorized.
 
         This coroutine may be overridden in a subclass, for example to
         authenticate against a database or an external service.
 
-        Args:
-            username: HTTP Basic Auth username.
-            password: HTTP Basic Auth password.
+        Args:     username: HTTP Basic Auth username.     password: HTTP Basic
+        Auth password.
 
-        Returns:
-            bool: :obj:`True` if the handshake should continue;
-            :obj:`False` if it should fail with an HTTP 401 error.
-
+        Returns:     bool: :obj:`True` if the handshake should continue;
+        :obj:`False` if it should fail with an HTTP 401 error.
         """
         if self._check_credentials is not None:
             return await self._check_credentials(username, password)
@@ -80,10 +72,7 @@ class BasicAuthWebSocketServerProtocol(WebSocketServerProtocol):
         path: str,
         request_headers: Headers,
     ) -> Optional[HTTPResponse]:
-        """
-        Check HTTP Basic Auth and return an HTTP 401 response if needed.
-
-        """
+        """Check HTTP Basic Auth and return an HTTP 401 response if needed."""
         try:
             authorization = request_headers["Authorization"]
         except KeyError:
@@ -120,37 +109,27 @@ def basic_auth_protocol_factory(
     check_credentials: Optional[Callable[[str, str], Awaitable[bool]]] = None,
     create_protocol: Optional[Callable[..., BasicAuthWebSocketServerProtocol]] = None,
 ) -> Callable[..., BasicAuthWebSocketServerProtocol]:
-    """
-    Protocol factory that enforces HTTP Basic Auth.
+    """Protocol factory that enforces HTTP Basic Auth.
 
     :func:`basic_auth_protocol_factory` is designed to integrate with
     :func:`~websockets.server.serve` like this::
 
-        websockets.serve(
-            ...,
-            create_protocol=websockets.basic_auth_protocol_factory(
-                realm="my dev server",
-                credentials=("hello", "iloveyou"),
-            )
-        )
+    websockets.serve(     ...,
+    create_protocol=websockets.basic_auth_protocol_factory(         realm="my
+    dev server",         credentials=("hello", "iloveyou"),     ) )
 
-    Args:
-        realm: Scope of protection. It should contain only ASCII characters
-            because the encoding of non-ASCII characters is undefined.
-            Refer to section 2.2 of :rfc:`7235` for details.
-        credentials: Hard coded authorized credentials. It can be a
-            ``(username, password)`` pair or a list of such pairs.
-        check_credentials: Coroutine that verifies credentials.
-            It receives ``username`` and ``password`` arguments
-            and returns a :class:`bool`. One of ``credentials`` or
-            ``check_credentials`` must be provided but not both.
-        create_protocol: Factory that creates the protocol. By default, this
-            is :class:`BasicAuthWebSocketServerProtocol`. It can be replaced
-            by a subclass.
-    Raises:
-        TypeError: If the ``credentials`` or ``check_credentials`` argument is
-            wrong.
-
+    Args:     realm: Scope of protection. It should contain only ASCII
+    characters         because the encoding of non-ASCII characters is
+    undefined.         Refer to section 2.2 of :rfc:`7235` for details.
+    credentials: Hard coded authorized credentials. It can be a ``(username,
+    password)`` pair or a list of such pairs. check_credentials: Coroutine that
+    verifies credentials.         It receives ``username`` and ``password``
+    arguments         and returns a :class:`bool`. One of ``credentials`` or
+    ``check_credentials`` must be provided but not both.     create_protocol:
+    Factory that creates the protocol. By default, this         is
+    :class:`BasicAuthWebSocketServerProtocol`. It can be replaced         by a
+    subclass. Raises:     TypeError: If the ``credentials`` or
+    ``check_credentials`` argument is         wrong.
     """
     if (credentials is None) == (check_credentials is None):
         raise TypeError("provide either credentials or check_credentials")

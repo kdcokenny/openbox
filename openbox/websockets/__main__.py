@@ -18,11 +18,9 @@ from .sync.client import ClientConnection, connect
 if sys.platform == "win32":
 
     def win_enable_vt100() -> None:
-        """
-        Enable VT-100 for console output on Windows.
+        """Enable VT-100 for console output on Windows.
 
         See also https://bugs.python.org/issue29059.
-
         """
         import ctypes
 
@@ -117,7 +115,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.version:
-        print(f"websockets n/a")
+        print("websockets n/a")
         return
 
     if args.uri is None:

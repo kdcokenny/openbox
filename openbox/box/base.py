@@ -1,4 +1,4 @@
-""" Abstract Base Class for Isolated Execution Environments (CodeBox's) """
+"""Abstract Base Class for Isolated Execution Environments (CodeBox's)"""
 
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -12,92 +12,92 @@ from openbox.schema import CodeBoxFile, CodeBoxOutput, CodeBoxStatus
 
 
 class BaseBox(ABC):
-    """CodeBox Abstract Base Class"""
+    """CodeBox Abstract Base Class."""
 
     def __init__(self, session_id: Optional[UUID] = None) -> None:
-        """Initialize the CodeBox instance"""
+        """Initialize the CodeBox instance."""
         self.session_id = session_id
         self.last_interaction = datetime.now()
 
     def _update(self) -> None:
-        """Update last interaction time"""
+        """Update last interaction time."""
         self.last_interaction = datetime.now()
 
     @abstractmethod
     def start(self) -> CodeBoxStatus:
-        """Startup the CodeBox instance"""
+        """Startup the CodeBox instance."""
 
     @abstractmethod
     async def astart(self) -> CodeBoxStatus:
-        """Async Startup the CodeBox instance"""
+        """Async Startup the CodeBox instance."""
 
     @abstractmethod
     def status(self) -> CodeBoxStatus:
-        """Get the current status of the CodeBox instance"""
+        """Get the current status of the CodeBox instance."""
 
     @abstractmethod
     async def astatus(self) -> CodeBoxStatus:
-        """Async Get the current status of the CodeBox instance"""
+        """Async Get the current status of the CodeBox instance."""
 
     @abstractmethod
     def run(
         self, code: Optional[str] = None, file_path: Optional[PathLike] = None
     ) -> CodeBoxOutput:
-        """Execute python code inside the CodeBox instance"""
+        """Execute python code inside the CodeBox instance."""
 
     @abstractmethod
     async def arun(
         self, code: str, file_path: Optional[PathLike] = None
     ) -> CodeBoxOutput:
-        """Async Execute python code inside the CodeBox instance"""
+        """Async Execute python code inside the CodeBox instance."""
 
     @abstractmethod
     def upload(self, file_name: str, content: bytes) -> CodeBoxStatus:
-        """Upload a file as bytes to the CodeBox instance"""
+        """Upload a file as bytes to the CodeBox instance."""
 
     @abstractmethod
     async def aupload(self, file_name: str, content: bytes) -> CodeBoxStatus:
-        """Async Upload a file as bytes to the CodeBox instance"""
+        """Async Upload a file as bytes to the CodeBox instance."""
 
     @abstractmethod
     def download(self, file_name: str) -> CodeBoxFile:
-        """Download a file as CodeBoxFile schema"""
+        """Download a file as CodeBoxFile schema."""
 
     @abstractmethod
     async def adownload(self, file_name: str) -> CodeBoxFile:
-        """Async Download a file as CodeBoxFile schema"""
+        """Async Download a file as CodeBoxFile schema."""
 
     @abstractmethod
     def install(self, package_name: str) -> CodeBoxStatus:
-        """Install a python package to the venv"""
+        """Install a python package to the venv."""
 
     @abstractmethod
     async def ainstall(self, package_name: str) -> CodeBoxStatus:
-        """Async Install a python package to the venv"""
+        """Async Install a python package to the venv."""
 
     @abstractmethod
     def list_files(self) -> List[CodeBoxFile]:
-        """List all available files inside the CodeBox instance"""
+        """List all available files inside the CodeBox instance."""
 
     @abstractmethod
     async def alist_files(self) -> List[CodeBoxFile]:
-        """Async List all available files inside the CodeBox instance"""
+        """Async List all available files inside the CodeBox instance."""
 
     @abstractmethod
     def restart(self) -> CodeBoxStatus:
-        """Restart the jupyter kernel inside the CodeBox instance"""
+        """Restart the jupyter kernel inside the CodeBox instance."""
 
     @abstractmethod
     async def arestart(self) -> CodeBoxStatus:
-        """Async Restart the jupyter kernel inside the CodeBox instance"""
+        """Async Restart the jupyter kernel inside the CodeBox instance."""
 
     @abstractmethod
     def stop(self) -> CodeBoxStatus:
-        """Terminate the CodeBox instance"""
+        """Terminate the CodeBox instance."""
 
     @abstractmethod
     async def astop(self) -> CodeBoxStatus:
-        """Async Terminate the CodeBox instance"""
+        """Async Terminate the CodeBox instance."""
 
     def __enter__(self) -> Self:
         self.start()

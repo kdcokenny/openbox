@@ -25,8 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class Connection:
-    """
-    Threaded implementation of a WebSocket connection.
+    """Threaded implementation of a WebSocket connection.
 
     :class:`Connection` provides APIs shared between WebSocket servers and
     clients.
@@ -34,7 +33,6 @@ class Connection:
     You shouldn't use it directly. Instead, use
     :class:`~websockets.sync.client.ClientConnection` or
     :class:`~websockets.sync.server.ServerConnection`.
-
     """
 
     recv_bufsize = 65536
@@ -58,7 +56,10 @@ class Connection:
 
         # Copy attributes from the protocol for convenience.
         self.id: uuid.UUID = self.protocol.id
-        """Unique identifier of the connection. Useful in logs."""
+        """Unique identifier of the connection.
+
+        Useful in logs.
+        """
         self.logger: LoggerLike = self.protocol.logger
         """Logger for this connection."""
         self.debug = self.protocol.debug
@@ -96,37 +97,31 @@ class Connection:
 
     @property
     def local_address(self) -> Any:
-        """
-        Local address of the connection.
+        """Local address of the connection.
 
         For IPv4 connections, this is a ``(host, port)`` tuple.
 
-        The format of the address depends on the address family.
-        See :meth:`~socket.socket.getsockname`.
-
+        The format of the address depends on the address family. See
+        :meth:`~socket.socket.getsockname`.
         """
         return self.socket.getsockname()
 
     @property
     def remote_address(self) -> Any:
-        """
-        Remote address of the connection.
+        """Remote address of the connection.
 
         For IPv4 connections, this is a ``(host, port)`` tuple.
 
-        The format of the address depends on the address family.
-        See :meth:`~socket.socket.getpeername`.
-
+        The format of the address depends on the address family. See
+        :meth:`~socket.socket.getpeername`.
         """
         return self.socket.getpeername()
 
     @property
     def subprotocol(self) -> Optional[Subprotocol]:
-        """
-        Subprotocol negotiated during the opening handshake.
+        """Subprotocol negotiated during the opening handshake.
 
         :obj:`None` if no subprotocol was negotiated.
-
         """
         return self.protocol.subprotocol
 
@@ -147,15 +142,14 @@ class Connection:
             self.close(CloseCode.INTERNAL_ERROR)
 
     def __iter__(self) -> Iterator[Data]:
-        """
-        Iterate on incoming messages.
+        """Iterate on incoming messages.
 
-        The iterator calls :meth:`recv` and yields messages in an infinite loop.
+        The iterator calls :meth:`recv` and yields messages in an infinite
+        loop.
 
         It exits when the connection is closed normally. It raises a
         :exc:`~websockets.exceptions.ConnectionClosedError` exception after a
         protocol error or a network failure.
-
         """
         try:
             while True:
@@ -164,36 +158,35 @@ class Connection:
             return
 
     def recv(self, timeout: Optional[float] = None) -> Data:
-        """
-        Receive the next message.
+        """Receive the next message.
 
         When the connection is closed, :meth:`recv` raises
         :exc:`~websockets.exceptions.ConnectionClosed`. Specifically, it raises
         :exc:`~websockets.exceptions.ConnectionClosedOK` after a normal closure
-        and :exc:`~websockets.exceptions.ConnectionClosedError` after a protocol
-        error or a network failure. This is how you detect the end of the
-        message stream.
+        and :exc:`~websockets.exceptions.ConnectionClosedError` after a
+        protocol error or a network failure. This is how you detect the end of
+        the message stream.
 
         If ``timeout`` is :obj:`None`, block until a message is received. If
         ``timeout`` is set and no message is received within ``timeout``
-        seconds, raise :exc:`TimeoutError`. Set ``timeout`` to ``0`` to check if
-        a message was already received.
+        seconds, raise :exc:`TimeoutError`. Set ``timeout`` to ``0`` to check
+        if a message was already received.
 
         If the message is fragmented, wait until all fragments are received,
         reassemble them, and return the whole message.
 
-        Returns:
-            A string (:class:`str`) for a Text_ frame or a bytestring
-            (:class:`bytes`) for a Binary_ frame.
+        Returns:     A string (:class:`str`) for a Text_ frame or a bytestring
+        (:class:`bytes`) for a Binary_ frame.
 
-            .. _Text: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
-            .. _Binary: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
+        .. _Text:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
+         .. _Binary:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
 
         Raises:
-            ConnectionClosed: When the connection is closed.
-            RuntimeError: If two threads call :meth:`recv` or
-                :meth:`recv_streaming` concurrently.
-
+        ConnectionClosed: When the connection is closed.
+        RuntimeError: If two threads call :meth:`recv` or
+        :meth:`recv_streaming` concurrently.
         """
         try:
             return self.recv_messages.get(timeout)
@@ -206,8 +199,7 @@ class Connection:
             ) from None
 
     def recv_streaming(self) -> Iterator[Data]:
-        """
-        Receive the next message frame by frame.
+        """Receive the next message frame by frame.
 
         If the message is fragmented, yield each fragment as it is received.
         The iterator must be fully consumed, or else the connection will become
@@ -215,18 +207,18 @@ class Connection:
 
         :meth:`recv_streaming` raises the same exceptions as :meth:`recv`.
 
-        Returns:
-            An iterator of strings (:class:`str`) for a Text_ frame or
-            bytestrings (:class:`bytes`) for a Binary_ frame.
+        Returns:     An iterator of strings (:class:`str`) for a Text_ frame or
+        bytestrings (:class:`bytes`) for a Binary_ frame.
 
-            .. _Text: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
-            .. _Binary: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
+        .. _Text:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
+         .. _Binary:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
 
         Raises:
-            ConnectionClosed: When the connection is closed.
-            RuntimeError: If two threads call :meth:`recv` or
-                :meth:`recv_streaming` concurrently.
-
+        ConnectionClosed: When the connection is closed.
+        RuntimeError: If two threads call :meth:`recv` or
+        :meth:`recv_streaming` concurrently.
         """
         try:
             yield from self.recv_messages.get_iter()
@@ -239,15 +231,16 @@ class Connection:
             ) from None
 
     def send(self, message: Union[Data, Iterable[Data]]) -> None:
-        """
-        Send a message.
+        """Send a message.
 
         A string (:class:`str`) is sent as a Text_ frame. A bytestring or
         bytes-like object (:class:`bytes`, :class:`bytearray`, or
         :class:`memoryview`) is sent as a Binary_ frame.
 
-        .. _Text: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
-        .. _Binary: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
+        .. _Text:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
+         .. _Binary:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.6
 
         :meth:`send` also accepts an iterable of strings, bytestrings, or
         bytes-like objects to enable fragmentation_. Each item is treated as a
@@ -255,7 +248,8 @@ class Connection:
         same type, or else :meth:`send` will raise a :exc:`TypeError` and the
         connection will be closed.
 
-        .. _fragmentation: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.4
+        .. _fragmentation:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.4
 
         :meth:`send` rejects dict-like objects because this is often an error.
         (If you really want to send the keys of a dict-like object as fragments,
@@ -269,13 +263,12 @@ class Connection:
         error or a network failure.
 
         Args:
-            message: Message to send.
+        message: Message to send.
 
         Raises:
-            ConnectionClosed: When the connection is closed.
-            RuntimeError: If a connection is busy sending a fragmented message.
-            TypeError: If ``message`` doesn't have a supported type.
-
+        ConnectionClosed: When the connection is closed.
+        RuntimeError: If a connection is busy sending a fragmented message.
+        TypeError: If ``message`` doesn't have a supported type.
         """
         # Unfragmented message -- this case must be handled first because
         # strings and bytes-like objects are iterable.
@@ -385,20 +378,17 @@ class Connection:
             raise TypeError("data must be bytes, str, or iterable")
 
     def close(self, code: int = CloseCode.NORMAL_CLOSURE, reason: str = "") -> None:
-        """
-        Perform the closing handshake.
+        """Perform the closing handshake.
 
-        :meth:`close` waits for the other end to complete the handshake, for the
-        TCP connection to terminate, and for all incoming messages to be read
-        with :meth:`recv`.
+        :meth:`close` waits for the other end to complete the handshake, for
+        the TCP connection to terminate, and for all incoming messages to be
+        read with :meth:`recv`.
 
-        :meth:`close` is idempotent: it doesn't do anything once the
-        connection is closed.
+        :meth:`close` is idempotent: it doesn't do anything once the connection
+        is closed.
 
-        Args:
-            code: WebSocket close code.
-            reason: WebSocket close reason.
-
+        Args:     code: WebSocket close code.     reason: WebSocket close
+        reason.
         """
         try:
             # The context manager takes care of waiting for the TCP connection
@@ -417,32 +407,31 @@ class Connection:
             pass
 
     def ping(self, data: Optional[Data] = None) -> threading.Event:
-        """
-        Send a Ping_.
+        """Send a Ping_.
 
-        .. _Ping: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.5.2
+        .. _Ping:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.5.2
 
         A ping may serve as a keepalive or as a check that the remote endpoint
         received all messages up to this point
 
         Args:
-            data: Payload of the ping. A :class:`str` will be encoded to UTF-8.
-                If ``data`` is :obj:`None`, the payload is four random bytes.
+        data: Payload of the ping. A :class:`str` will be encoded to UTF-8.
+        If ``data`` is :obj:`None`, the payload is four random bytes.
 
         Returns:
-            An event that will be set when the corresponding pong is received.
-            You can ignore it if you don't intend to wait.
+        An event that will be set when the corresponding pong is received.
+        You can ignore it if you don't intend to wait.
 
-            ::
+        ::
 
-                pong_event = ws.ping()
-                pong_event.wait()  # only if you want to wait for the pong
+        pong_event = ws.ping()
+        pong_event.wait()  # only if you want to wait for the pong
 
         Raises:
-            ConnectionClosed: When the connection is closed.
-            RuntimeError: If another ping was sent with the same data and
-                the corresponding pong wasn't received yet.
-
+        ConnectionClosed: When the connection is closed.
+        RuntimeError: If another ping was sent with the same data and
+        the corresponding pong wasn't received yet.
         """
         if data is not None:
             data = prepare_ctrl(data)
@@ -462,19 +451,18 @@ class Connection:
             return pong_waiter
 
     def pong(self, data: Data = b"") -> None:
-        """
-        Send a Pong_.
+        """Send a Pong_.
 
-        .. _Pong: https://www.rfc-editor.org/rfc/rfc6455.html#section-5.5.3
+        .. _Pong:
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-5.5.3
 
         An unsolicited pong may serve as a unidirectional heartbeat.
 
         Args:
-            data: Payload of the pong. A :class:`str` will be encoded to UTF-8.
+        data: Payload of the pong. A :class:`str` will be encoded to UTF-8.
 
         Raises:
-            ConnectionClosed: When the connection is closed.
-
+        ConnectionClosed: When the connection is closed.
         """
         data = prepare_ctrl(data)
 
@@ -484,11 +472,9 @@ class Connection:
     # Private methods
 
     def process_event(self, event: Event) -> None:
-        """
-        Process one incoming event.
+        """Process one incoming event.
 
         This method is overridden in subclasses to handle the handshake.
-
         """
         assert isinstance(event, Frame)
         if event.opcode in DATA_OPCODES:
@@ -498,10 +484,7 @@ class Connection:
             self.acknowledge_pings(bytes(event.data))
 
     def acknowledge_pings(self, data: bytes) -> None:
-        """
-        Acknowledge pings when receiving a pong.
-
-        """
+        """Acknowledge pings when receiving a pong."""
         with self.protocol_mutex:
             # Ignore unsolicited pong.
             if data not in self.pings:
@@ -522,13 +505,11 @@ class Connection:
                 del self.pings[ping_id]
 
     def recv_events(self) -> None:
-        """
-        Read incoming data from the socket and process events.
+        """Read incoming data from the socket and process events.
 
         Run this method in a thread as long as the connection is alive.
 
         ``recv_events()`` exits immediately when the ``self.socket`` is closed.
-
         """
         try:
             while True:
@@ -622,21 +603,20 @@ class Connection:
         *,
         expected_state: State = OPEN,  # CONNECTING during the opening handshake
     ) -> Iterator[None]:
-        """
-        Create a context for writing to the connection from user code.
+        """Create a context for writing to the connection from user code.
 
         On entry, :meth:`send_context` acquires the connection lock and checks
         that the connection is open; on exit, it writes outgoing data to the
         socket::
 
-            with self.send_context():
-                self.protocol.send_text(message.encode("utf-8"))
+        with self.send_context():
+        self.protocol.send_text(message.encode("utf-8"))
 
-        When the connection isn't open on entry, when the connection is expected
-        to close on exit, or when an unexpected error happens, terminating the
-        connection, :meth:`send_context` waits until the connection is closed
-        then raises :exc:`~websockets.exceptions.ConnectionClosed`.
-
+        When the connection isn't open on entry, when the connection is
+        expected to close on exit, or when an unexpected error happens,
+        terminating the connection, :meth:`send_context` waits until the
+        connection is closed then raises
+        :exc:`~websockets.exceptions.ConnectionClosed`.
         """
         # Should we wait until the connection is closed?
         wait_for_close = False
@@ -724,14 +704,11 @@ class Connection:
             raise self.protocol.close_exc from original_exc
 
     def send_data(self) -> None:
-        """
-        Send outgoing data.
+        """Send outgoing data.
 
         This method requires holding protocol_mutex.
 
-        Raises:
-            OSError: When a socket operations fails.
-
+        Raises:     OSError: When a socket operations fails.
         """
         assert self.protocol_mutex.locked()
         for data in self.protocol.data_to_send():
@@ -746,23 +723,20 @@ class Connection:
                     pass
 
     def set_recv_events_exc(self, exc: Optional[BaseException]) -> None:
-        """
-        Set recv_events_exc, if not set yet.
+        """Set recv_events_exc, if not set yet.
 
         This method requires holding protocol_mutex.
-
         """
         assert self.protocol_mutex.locked()
         if self.recv_events_exc is None:
             self.recv_events_exc = exc
 
     def close_socket(self) -> None:
-        """
-        Shutdown and close socket. Close message assembler.
+        """Shutdown and close socket. Close message assembler.
 
-        Calling close_socket() guarantees that recv_events() terminates. Indeed,
-        recv_events() may block only on socket.recv() or on recv_messages.put().
-
+        Calling close_socket() guarantees that recv_events() terminates.
+        Indeed, recv_events() may block only on socket.recv() or on
+        recv_messages.put().
         """
         # shutdown() is required to interrupt recv() on Linux.
         try:

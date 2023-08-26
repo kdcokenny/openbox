@@ -15,10 +15,7 @@ UTF8Decoder = codecs.getincrementaldecoder("utf-8")
 
 
 class Assembler:
-    """
-    Assemble messages from frames.
-
-    """
+    """Assemble messages from frames."""
 
     def __init__(self) -> None:
         # Serialize reads and writes -- except for reads via synchronization
@@ -57,8 +54,7 @@ class Assembler:
         self.closed = False
 
     def get(self, timeout: Optional[float] = None) -> Data:
-        """
-        Read the next message.
+        """Read the next message.
 
         :meth:`get` returns a single :class:`str` or :class:`bytes`.
 
@@ -66,15 +62,12 @@ class Assembler:
         received, then it reassembles the message and returns it. To receive
         messages frame by frame, use :meth:`get_iter` instead.
 
-        Args:
-            timeout: If a timeout is provided and elapses before a complete
-                message is received, :meth:`get` raises :exc:`TimeoutError`.
+        Args:     timeout: If a timeout is provided and elapses before a
+        complete         message is received, :meth:`get` raises
+        :exc:`TimeoutError`.
 
-        Raises:
-            EOFError: If the stream of frames has ended.
-            RuntimeError: If two threads run :meth:`get` or :meth:``get_iter`
-                concurrently.
-
+        Raises:     EOFError: If the stream of frames has ended. RuntimeError:
+        If two threads run :meth:`get` or :meth:``get_iter` concurrently.
         """
         with self.mutex:
             if self.closed:
@@ -117,8 +110,7 @@ class Assembler:
             return message
 
     def get_iter(self) -> Iterator[Data]:
-        """
-        Stream the next message.
+        """Stream the next message.
 
         Iterating the return value of :meth:`get_iter` yields a :class:`str` or
         :class:`bytes` for each frame in the message.
@@ -126,14 +118,11 @@ class Assembler:
         The iterator must be fully consumed before calling :meth:`get_iter` or
         :meth:`get` again. Else, :exc:`RuntimeError` is raised.
 
-        This method only makes sense for fragmented messages. If messages aren't
-        fragmented, use :meth:`get` instead.
+        This method only makes sense for fragmented messages. If messages
+        aren't fragmented, use :meth:`get` instead.
 
-        Raises:
-            EOFError: If the stream of frames has ended.
-            RuntimeError: If two threads run :meth:`get` or :meth:``get_iter`
-                concurrently.
-
+        Raises:     EOFError: If the stream of frames has ended. RuntimeError:
+        If two threads run :meth:`get` or :meth:``get_iter` concurrently.
         """
         with self.mutex:
             if self.closed:
@@ -183,8 +172,7 @@ class Assembler:
             self.chunks_queue = None
 
     def put(self, frame: Frame) -> None:
-        """
-        Add ``frame`` to the next message.
+        """Add ``frame`` to the next message.
 
         When ``frame`` is the final frame in a message, :meth:`put` waits until
         the message is fetched, either by calling :meth:`get` or by fully
@@ -193,10 +181,8 @@ class Assembler:
         :meth:`put` assumes that the stream of frames respects the protocol. If
         it doesn't, the behavior is undefined.
 
-        Raises:
-            EOFError: If the stream of frames has ended.
-            RuntimeError: If two threads run :meth:`put` concurrently.
-
+        Raises:     EOFError: If the stream of frames has ended. RuntimeError:
+        If two threads run :meth:`put` concurrently.
         """
         with self.mutex:
             if self.closed:
@@ -257,12 +243,10 @@ class Assembler:
             self.decoder = None
 
     def close(self) -> None:
-        """
-        End the stream of frames.
+        """End the stream of frames.
 
         Callling :meth:`close` concurrently with :meth:`get`, :meth:`get_iter`,
         or :meth:`put` is safe. They will raise :exc:`EOFError`.
-
         """
         with self.mutex:
             if self.closed:

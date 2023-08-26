@@ -8,12 +8,10 @@ __all__ = ["Deadline"]
 
 
 class Deadline:
-    """
-    Manage timeouts across multiple steps.
+    """Manage timeouts across multiple steps.
 
-    Args:
-        timeout: Time available in seconds or :obj:`None` if there is no limit.
-
+    Args:     timeout: Time available in seconds or :obj:`None` if there is no
+    limit.
     """
 
     def __init__(self, timeout: Optional[float]) -> None:
@@ -24,19 +22,14 @@ class Deadline:
             self.deadline = time.monotonic() + timeout
 
     def timeout(self, *, raise_if_elapsed: bool = True) -> Optional[float]:
-        """
-        Calculate a timeout from a deadline.
+        """Calculate a timeout from a deadline.
 
-        Args:
-            raise_if_elapsed (bool): Whether to raise :exc:`TimeoutError`
-                if the deadline lapsed.
+        Args:     raise_if_elapsed (bool): Whether to raise :exc:`TimeoutError`
+        if the deadline lapsed.
 
-        Raises:
-            TimeoutError: If the deadline lapsed.
+        Raises:     TimeoutError: If the deadline lapsed.
 
-        Returns:
-            Time left in seconds or :obj:`None` if there is no limit.
-
+        Returns:     Time left in seconds or :obj:`None` if there is no limit.
         """
         if self.deadline is None:
             return None

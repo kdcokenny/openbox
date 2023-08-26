@@ -12,20 +12,17 @@ __all__ = ["parse_uri", "WebSocketURI"]
 
 @dataclasses.dataclass
 class WebSocketURI:
-    """
-    WebSocket URI.
+    """WebSocket URI.
 
-    Attributes:
-        secure: :obj:`True` for a ``wss`` URI, :obj:`False` for a ``ws`` URI.
-        host: Normalized to lower case.
-        port: Always set even if it's the default.
-        path: May be empty.
-        query: May be empty if the URI doesn't include a query component.
-        username: Available when the URI contains `User Information`_.
-        password: Available when the URI contains `User Information`_.
+    Attributes:     secure: :obj:`True` for a ``wss`` URI, :obj:`False` for a
+    ``ws`` URI.     host: Normalized to lower case.     port: Always set even
+    if it's the default.     path: May be empty.     query: May be empty if the
+    URI doesn't include a query component.     username: Available when the URI
+    contains `User Information`_.     password: Available when the URI contains
+    `User Information`_.
 
-    .. _User Information: https://www.rfc-editor.org/rfc/rfc3986.html#section-3.2.1
-
+    .. _User Information:
+    https://www.rfc-editor.org/rfc/rfc3986.html#section-3.2.1
     """
 
     secure: bool
@@ -59,18 +56,13 @@ DELIMS = ":/?#[]@!$&'()*+,;="
 
 
 def parse_uri(uri: str) -> WebSocketURI:
-    """
-    Parse and validate a WebSocket URI.
+    """Parse and validate a WebSocket URI.
 
-    Args:
-        uri: WebSocket URI.
+    Args:     uri: WebSocket URI.
 
-    Returns:
-        WebSocketURI: Parsed WebSocket URI.
+    Returns:     WebSocketURI: Parsed WebSocket URI.
 
-    Raises:
-        InvalidURI: if ``uri`` isn't a valid WebSocket URI.
-
+    Raises:     InvalidURI: if ``uri`` isn't a valid WebSocket URI.
     """
     parsed = urllib.parse.urlparse(uri)
     if parsed.scheme not in ["ws", "wss"]:

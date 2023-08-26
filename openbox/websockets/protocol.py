@@ -69,19 +69,15 @@ SEND_EOF = b""
 
 
 class Protocol:
-    """
-    Sans-I/O implementation of a WebSocket connection.
+    """Sans-I/O implementation of a WebSocket connection.
 
-    Args:
-        side: :attr:`~Side.CLIENT` or :attr:`~Side.SERVER`.
-        state: initial state of the WebSocket connection.
-        max_size: maximum size of incoming messages in bytes;
-            :obj:`None` disables the limit.
-        logger: logger for this connection; depending on ``side``,
-            defaults to ``logging.getLogger("websockets.client")``
-            or ``logging.getLogger("websockets.server")``;
-            see the :doc:`logging guide <../../topics/logging>` for details.
-
+    Args:     side: :attr:`~Side.CLIENT` or :attr:`~Side.SERVER`.     state:
+    initial state of the WebSocket connection.     max_size: maximum size of
+    incoming messages in bytes;         :obj:`None` disables the limit. logger:
+    logger for this connection; depending on ``side``,         defaults to
+    ``logging.getLogger("websockets.client")``         or
+    ``logging.getLogger("websockets.server")``;         see the :doc:`logging
+    guide <../../topics/logging>` for details.
     """
 
     def __init__(
@@ -94,7 +90,10 @@ class Protocol:
     ) -> None:
         # Unique identifier. For logs.
         self.id: uuid.UUID = uuid.uuid4()
-        """Unique identifier of the connection. Useful in logs."""
+        """Unique identifier of the connection.
+
+        Useful in logs.
+        """
 
         # Logger or LoggerAdapter for this connection.
         if logger is None:
@@ -134,11 +133,9 @@ class Protocol:
 
         # Track if an exception happened during the handshake.
         self.handshake_exc: Optional[Exception] = None
-        """
-        Exception to raise if the opening handshake failed.
+        """Exception to raise if the opening handshake failed.
 
         :obj:`None` if the opening handshake succeeded.
-
         """
 
         # Track if send_eof() was called.
@@ -154,11 +151,9 @@ class Protocol:
 
     @property
     def state(self) -> State:
-        """
-        WebSocket connection state.
+        """WebSocket connection state.
 
         Defined in 4.1, 4.2, 7.1.3, and 7.1.4 of :rfc:`6455`.
-
         """
         return self._state
 
@@ -170,14 +165,12 @@ class Protocol:
 
     @property
     def close_code(self) -> Optional[int]:
-        """
-        `WebSocket close code`_.
+        """`WebSocket close code`_.
 
         .. _WebSocket close code:
-            https://www.rfc-editor.org/rfc/rfc6455.html#section-7.1.5
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-7.1.5
 
         :obj:`None` if the connection isn't closed yet.
-
         """
         if self.state is not CLOSED:
             return None
@@ -188,14 +181,12 @@ class Protocol:
 
     @property
     def close_reason(self) -> Optional[str]:
-        """
-        `WebSocket close reason`_.
+        """`WebSocket close reason`_.
 
         .. _WebSocket close reason:
-            https://www.rfc-editor.org/rfc/rfc6455.html#section-7.1.6
+        https://www.rfc-editor.org/rfc/rfc6455.html#section-7.1.6
 
         :obj:`None` if the connection isn't closed yet.
-
         """
         if self.state is not CLOSED:
             return None
@@ -206,19 +197,16 @@ class Protocol:
 
     @property
     def close_exc(self) -> ConnectionClosed:
-        """
-        Exception to raise when trying to interact with a closed connection.
+        """Exception to raise when trying to interact with a closed connection.
 
-        Don't raise this exception while the connection :attr:`state`
-        is :attr:`~websockets.protocol.State.CLOSING`; wait until
-        it's :attr:`~websockets.protocol.State.CLOSED`.
+        Don't raise this exception while the connection :attr:`state` is
+        :attr:`~websockets.protocol.State.CLOSING`; wait until it's
+        :attr:`~websockets.protocol.State.CLOSED`.
 
         Indeed, the exception includes the close code and reason, which are
         known only once the connection is closed.
 
-        Raises:
-            AssertionError: if the connection isn't closed yet.
-
+        Raises:     AssertionError: if the connection isn't closed yet.
         """
         assert self.state is CLOSED, "connection isn't closed yet"
         exc_type: Type[ConnectionClosed]
@@ -243,35 +231,29 @@ class Protocol:
     # Public methods for receiving data.
 
     def receive_data(self, data: bytes) -> None:
-        """
-        Receive data from the network.
+        """Receive data from the network.
 
         After calling this method:
 
         - You must call :meth:`data_to_send` and send this data to the network.
         - You should call :meth:`events_received` and process resulting events.
 
-        Raises:
-            EOFError: if :meth:`receive_eof` was called earlier.
-
+        Raises:     EOFError: if :meth:`receive_eof` was called earlier.
         """
         self.reader.feed_data(data)
         next(self.parser)
 
     def receive_eof(self) -> None:
-        """
-        Receive the end of the data stream from the network.
+        """Receive the end of the data stream from the network.
 
         After calling this method:
 
         - You must call :meth:`data_to_send` and send this data to the network;
-          it will return ``[b""]``, signaling the end of the stream, or ``[]``.
-        - You aren't expected to call :meth:`events_received`; it won't return
-          any new events.
+        it will return ``[b""]``, signaling the end of the stream, or ``[]``. -
+        You aren't expected to call :meth:`events_received`; it won't return
+        any new events.
 
-        Raises:
-            EOFError: if :meth:`receive_eof` was called earlier.
-
+        Raises:     EOFError: if :meth:`receive_eof` was called earlier.
         """
         self.reader.feed_eof()
         next(self.parser)
@@ -279,21 +261,19 @@ class Protocol:
     # Public methods for sending events.
 
     def send_continuation(self, data: bytes, fin: bool) -> None:
-        """
-        Send a `Continuation frame`_.
+        """Send a `Continuation frame`_.
 
         .. _Continuation frame:
-            https://datatracker.ietf.org/doc/html/rfc6455#section-5.6
+        https://datatracker.ietf.org/doc/html/rfc6455#section-5.6
 
         Parameters:
-            data: payload containing the same kind of data
-                as the initial frame.
-            fin: FIN bit; set it to :obj:`True` if this is the last frame
-                of a fragmented message and to :obj:`False` otherwise.
+        data: payload containing the same kind of data
+        as the initial frame.
+        fin: FIN bit; set it to :obj:`True` if this is the last frame
+        of a fragmented message and to :obj:`False` otherwise.
 
         Raises:
-            ProtocolError: if a fragmented message isn't in progress.
-
+        ProtocolError: if a fragmented message isn't in progress.
         """
         if not self.expect_continuation_frame:
             raise ProtocolError("unexpected continuation frame")
@@ -301,20 +281,18 @@ class Protocol:
         self.send_frame(Frame(OP_CONT, data, fin))
 
     def send_text(self, data: bytes, fin: bool = True) -> None:
-        """
-        Send a `Text frame`_.
+        """Send a `Text frame`_.
 
         .. _Text frame:
-            https://datatracker.ietf.org/doc/html/rfc6455#section-5.6
+        https://datatracker.ietf.org/doc/html/rfc6455#section-5.6
 
         Parameters:
-            data: payload containing text encoded with UTF-8.
-            fin: FIN bit; set it to :obj:`False` if this is the first frame of
-                a fragmented message.
+        data: payload containing text encoded with UTF-8.
+        fin: FIN bit; set it to :obj:`False` if this is the first frame of
+        a fragmented message.
 
         Raises:
-            ProtocolError: if a fragmented message is in progress.
-
+        ProtocolError: if a fragmented message is in progress.
         """
         if self.expect_continuation_frame:
             raise ProtocolError("expected a continuation frame")
@@ -322,20 +300,18 @@ class Protocol:
         self.send_frame(Frame(OP_TEXT, data, fin))
 
     def send_binary(self, data: bytes, fin: bool = True) -> None:
-        """
-        Send a `Binary frame`_.
+        """Send a `Binary frame`_.
 
         .. _Binary frame:
-            https://datatracker.ietf.org/doc/html/rfc6455#section-5.6
+        https://datatracker.ietf.org/doc/html/rfc6455#section-5.6
 
         Parameters:
-            data: payload containing arbitrary binary data.
-            fin: FIN bit; set it to :obj:`False` if this is the first frame of
-                a fragmented message.
+        data: payload containing arbitrary binary data.
+        fin: FIN bit; set it to :obj:`False` if this is the first frame of
+        a fragmented message.
 
         Raises:
-            ProtocolError: if a fragmented message is in progress.
-
+        ProtocolError: if a fragmented message is in progress.
         """
         if self.expect_continuation_frame:
             raise ProtocolError("expected a continuation frame")
@@ -343,20 +319,18 @@ class Protocol:
         self.send_frame(Frame(OP_BINARY, data, fin))
 
     def send_close(self, code: Optional[int] = None, reason: str = "") -> None:
-        """
-        Send a `Close frame`_.
+        """Send a `Close frame`_.
 
         .. _Close frame:
-            https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.1
+        https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.1
 
         Parameters:
-            code: close code.
-            reason: close reason.
+        code: close code.
+        reason: close reason.
 
         Raises:
-            ProtocolError: if a fragmented message is being sent, if the code
-                isn't valid, or if a reason is provided without a code
-
+        ProtocolError: if a fragmented message is being sent, if the code
+        isn't valid, or if a reason is provided without a code
         """
         if self.expect_continuation_frame:
             raise ProtocolError("expected a continuation frame")
@@ -375,44 +349,39 @@ class Protocol:
         self.state = CLOSING
 
     def send_ping(self, data: bytes) -> None:
-        """
-        Send a `Ping frame`_.
+        """Send a `Ping frame`_.
 
         .. _Ping frame:
-            https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.2
+        https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.2
 
         Parameters:
-            data: payload containing arbitrary binary data.
-
+        data: payload containing arbitrary binary data.
         """
         self.send_frame(Frame(OP_PING, data))
 
     def send_pong(self, data: bytes) -> None:
-        """
-        Send a `Pong frame`_.
+        """Send a `Pong frame`_.
 
         .. _Pong frame:
-            https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.3
+        https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.3
 
         Parameters:
-            data: payload containing arbitrary binary data.
-
+        data: payload containing arbitrary binary data.
         """
         self.send_frame(Frame(OP_PONG, data))
 
     def fail(self, code: int, reason: str = "") -> None:
-        """
-        `Fail the WebSocket connection`_.
+        """`Fail the WebSocket connection`_.
 
         .. _Fail the WebSocket connection:
-            https://datatracker.ietf.org/doc/html/rfc6455#section-7.1.7
+        https://datatracker.ietf.org/doc/html/rfc6455#section-7.1.7
 
         Parameters:
-            code: close code
-            reason: close reason
+        code: close code
+        reason: close reason
 
         Raises:
-            ProtocolError: if the code isn't valid.
+        ProtocolError: if the code isn't valid.
         """
         # 7.1.7. Fail the WebSocket Connection
 
@@ -444,15 +413,13 @@ class Protocol:
     # Public method for getting incoming events after receiving data.
 
     def events_received(self) -> List[Event]:
-        """
-        Fetch events generated from data received from the network.
+        """Fetch events generated from data received from the network.
 
         Call this method immediately after any of the ``receive_*()`` methods.
 
         Process resulting events, likely by passing them to the application.
 
-        Returns:
-            List[Event]: Events read from the connection.
+        Returns:     List[Event]: Events read from the connection.
         """
         events, self.events = self.events, []
         return events
@@ -460,28 +427,24 @@ class Protocol:
     # Public method for getting outgoing data after receiving data or sending events.
 
     def data_to_send(self) -> List[bytes]:
-        """
-        Obtain data to send to the network.
+        """Obtain data to send to the network.
 
         Call this method immediately after any of the ``receive_*()``,
         ``send_*()``, or :meth:`fail` methods.
 
         Write resulting data to the connection.
 
-        The empty bytestring :data:`~websockets.protocol.SEND_EOF` signals
-        the end of the data stream. When you receive it, half-close the TCP
+        The empty bytestring :data:`~websockets.protocol.SEND_EOF` signals the
+        end of the data stream. When you receive it, half-close the TCP
         connection.
 
-        Returns:
-            List[bytes]: Data to write to the connection.
-
+        Returns:     List[bytes]: Data to write to the connection.
         """
         writes, self.writes = self.writes, []
         return writes
 
     def close_expected(self) -> bool:
-        """
-        Tell if the TCP connection is expected to close soon.
+        """Tell if the TCP connection is expected to close soon.
 
         Call this method immediately after any of the ``receive_*()``,
         ``send_close()``, or :meth:`fail` methods.
@@ -489,9 +452,8 @@ class Protocol:
         If it returns :obj:`True`, schedule closing the TCP connection after a
         short timeout if the other side hasn't already closed it.
 
-        Returns:
-            bool: Whether the TCP connection is expected to close soon.
-
+        Returns:     bool: Whether the TCP connection is expected to close
+        soon.
         """
         # We expect a TCP close if and only if we sent a close frame:
         # * Normal closure: once we send a close frame, we expect a TCP close:
@@ -506,15 +468,13 @@ class Protocol:
     # Private methods for receiving data.
 
     def parse(self) -> Generator[None, None, None]:
-        """
-        Parse incoming data into frames.
+        """Parse incoming data into frames.
 
         :meth:`receive_data` and :meth:`receive_eof` run this generator
         coroutine until it needs more data or reaches EOF.
 
         :meth:`parse` never raises an exception. Instead, it sets the
         :attr:`parser_exc` and yields control.
-
         """
         try:
             while True:
@@ -577,14 +537,12 @@ class Protocol:
         raise AssertionError("parse() shouldn't step after error")
 
     def discard(self) -> Generator[None, None, None]:
-        """
-        Discard incoming data.
+        """Discard incoming data.
 
         This coroutine replaces :meth:`parse`:
 
-        - after receiving a close frame, during a normal closure (1.4);
-        - after sending a close frame, during an abnormal closure (7.1.7).
-
+        - after receiving a close frame, during a normal closure (1.4); - after
+        sending a close frame, during an abnormal closure (7.1.7).
         """
         # The server close the TCP connection in the same circumstances where
         # discard() replaces parse(). The client closes the connection later,
@@ -607,10 +565,7 @@ class Protocol:
         raise AssertionError("discard() shouldn't step after EOF")
 
     def recv_frame(self, frame: Frame) -> None:
-        """
-        Process an incoming frame.
-
-        """
+        """Process an incoming frame."""
         if frame.opcode is OP_TEXT or frame.opcode is OP_BINARY:
             if self.cur_size is not None:
                 raise ProtocolError("expected a continuation frame")

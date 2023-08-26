@@ -1,8 +1,7 @@
-"""
-This file contains the schema for the CodeBox API.
-It is used to validate the data returned from the API.
-It also helps with type hinting and provides a nice
-interface for interacting with the API.
+"""This file contains the schema for the CodeBox API.
+
+It is used to validate the data returned from the API. It also helps with type
+hinting and provides a nice interface for interacting with the API.
 """
 
 from typing import Optional
@@ -11,9 +10,7 @@ from pydantic import BaseModel
 
 
 class CodeBoxStatus(BaseModel):
-    """
-    Represents the status of a CodeBox instance.
-    """
+    """Represents the status of a CodeBox instance."""
 
     status: str
 
@@ -28,9 +25,7 @@ class CodeBoxStatus(BaseModel):
 
 
 class CodeBoxOutput(BaseModel):
-    """
-    Represents the code execution output of a CodeBox instance.
-    """
+    """Represents the code execution output of a CodeBox instance."""
 
     type: str
     content: str
@@ -46,9 +41,7 @@ class CodeBoxOutput(BaseModel):
 
 
 class CodeBoxFile(BaseModel):
-    """
-    Represents a file returned from a CodeBox instance.
-    """
+    """Represents a file returned from a CodeBox instance."""
 
     name: str
     content: Optional[bytes] = None

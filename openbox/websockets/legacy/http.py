@@ -15,10 +15,7 @@ MAX_LINE = 8192
 
 
 def d(value: bytes) -> str:
-    """
-    Decode a bytestring for interpolating into an error message.
-
-    """
+    """Decode a bytestring for interpolating into an error message."""
     return value.decode(errors="backslashreplace")
 
 
@@ -43,8 +40,7 @@ _value_re = re.compile(rb"[\x09\x20-\x7e\x80-\xff]*")
 
 
 async def read_request(stream: asyncio.StreamReader) -> Tuple[str, Headers]:
-    """
-    Read an HTTP/1.1 GET request and return ``(path, headers)``.
+    """Read an HTTP/1.1 GET request and return ``(path, headers)``.
 
     ``path`` isn't URL-decoded or validated in any way.
 
@@ -55,14 +51,11 @@ async def read_request(stream: asyncio.StreamReader) -> Tuple[str, Headers]:
     WebSocket handshake requests don't have one. If the request contains a
     body, it may be read from ``stream`` after this coroutine returns.
 
-    Args:
-        stream: Input to read the request from.
+    Args:     stream: Input to read the request from.
 
-    Raises:
-        EOFError: If the connection is closed without a full HTTP request.
-        SecurityError: If the request exceeds a security limit.
-        ValueError: If the request isn't well formatted.
-
+    Raises:     EOFError: If the connection is closed without a full HTTP
+    request.     SecurityError: If the request exceeds a security limit.
+    ValueError: If the request isn't well formatted.
     """
     # https://www.rfc-editor.org/rfc/rfc7230.html#section-3.1.1
 
@@ -92,8 +85,7 @@ async def read_request(stream: asyncio.StreamReader) -> Tuple[str, Headers]:
 
 
 async def read_response(stream: asyncio.StreamReader) -> Tuple[int, str, Headers]:
-    """
-    Read an HTTP/1.1 response and return ``(status_code, reason, headers)``.
+    """Read an HTTP/1.1 response and return ``(status_code, reason, headers)``.
 
     ``reason`` and ``headers`` are expected to contain only ASCII characters.
     Other characters are represented with surrogate escapes.
@@ -102,14 +94,11 @@ async def read_response(stream: asyncio.StreamReader) -> Tuple[int, str, Headers
     WebSocket handshake responses don't have one. If the response contains a
     body, it may be read from ``stream`` after this coroutine returns.
 
-    Args:
-        stream: Input to read the response from.
+    Args:     stream: Input to read the response from.
 
-    Raises:
-        EOFError: If the connection is closed without a full HTTP response.
-        SecurityError: If the response exceeds a security limit.
-        ValueError: If the response isn't well formatted.
-
+    Raises:     EOFError: If the connection is closed without a full HTTP
+    response.     SecurityError: If the response exceeds a security limit.
+    ValueError: If the response isn't well formatted.
     """
     # https://www.rfc-editor.org/rfc/rfc7230.html#section-3.1.2
 
@@ -144,11 +133,9 @@ async def read_response(stream: asyncio.StreamReader) -> Tuple[int, str, Headers
 
 
 async def read_headers(stream: asyncio.StreamReader) -> Headers:
-    """
-    Read HTTP headers from ``stream``.
+    """Read HTTP headers from ``stream``.
 
     Non-ASCII characters are represented with surrogate escapes.
-
     """
     # https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2
 
@@ -184,11 +171,9 @@ async def read_headers(stream: asyncio.StreamReader) -> Headers:
 
 
 async def read_line(stream: asyncio.StreamReader) -> bytes:
-    """
-    Read a single line from ``stream``.
+    """Read a single line from ``stream``.
 
     CRLF is stripped from the return value.
-
     """
     # Security: this is bounded by the StreamReader's limit (default = 32 KiB).
     line = await stream.readline()

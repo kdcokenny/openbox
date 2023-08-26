@@ -1,31 +1,17 @@
-"""
-:mod:`websockets.exceptions` defines the following exception hierarchy:
+""":mod:`websockets.exceptions` defines the following exception hierarchy:
 
-* :exc:`WebSocketException`
-    * :exc:`ConnectionClosed`
-        * :exc:`ConnectionClosedError`
-        * :exc:`ConnectionClosedOK`
-    * :exc:`InvalidHandshake`
-        * :exc:`SecurityError`
-        * :exc:`InvalidMessage`
-        * :exc:`InvalidHeader`
-            * :exc:`InvalidHeaderFormat`
-            * :exc:`InvalidHeaderValue`
-            * :exc:`InvalidOrigin`
-            * :exc:`InvalidUpgrade`
-        * :exc:`InvalidStatus`
-        * :exc:`InvalidStatusCode` (legacy)
-        * :exc:`NegotiationError`
-            * :exc:`DuplicateParameter`
-            * :exc:`InvalidParameterName`
-            * :exc:`InvalidParameterValue`
-        * :exc:`AbortHandshake`
-        * :exc:`RedirectHandshake`
-    * :exc:`InvalidState`
-    * :exc:`InvalidURI`
-    * :exc:`PayloadTooBig`
-    * :exc:`ProtocolError`
-
+* :exc:`WebSocketException`     * :exc:`ConnectionClosed`         *
+:exc:`ConnectionClosedError`         * :exc:`ConnectionClosedOK`     *
+:exc:`InvalidHandshake`         * :exc:`SecurityError`         *
+:exc:`InvalidMessage`         * :exc:`InvalidHeader`             *
+:exc:`InvalidHeaderFormat`             * :exc:`InvalidHeaderValue` *
+:exc:`InvalidOrigin`             * :exc:`InvalidUpgrade`         *
+:exc:`InvalidStatus`         * :exc:`InvalidStatusCode` (legacy)         *
+:exc:`NegotiationError`             * :exc:`DuplicateParameter`             *
+:exc:`InvalidParameterName`             * :exc:`InvalidParameterValue` *
+:exc:`AbortHandshake`         * :exc:`RedirectHandshake`     *
+:exc:`InvalidState`     * :exc:`InvalidURI`     * :exc:`PayloadTooBig`     *
+:exc:`ProtocolError`
 """
 
 from __future__ import annotations
@@ -66,25 +52,19 @@ __all__ = [
 
 
 class WebSocketException(Exception):
-    """
-    Base class for all exceptions defined by websockets.
-
-    """
+    """Base class for all exceptions defined by websockets."""
 
 
 class ConnectionClosed(WebSocketException):
-    """
-    Raised when trying to interact with a closed connection.
+    """Raised when trying to interact with a closed connection.
 
-    Attributes:
-        rcvd (Optional[Close]): if a close frame was received, its code and
-            reason are available in ``rcvd.code`` and ``rcvd.reason``.
-        sent (Optional[Close]): if a close frame was sent, its code and reason
-            are available in ``sent.code`` and ``sent.reason``.
-        rcvd_then_sent (Optional[bool]): if close frames were received and
-            sent, this attribute tells in which order this happened, from the
-            perspective of this side of the connection.
-
+    Attributes:     rcvd (Optional[Close]): if a close frame was received, its
+    code and         reason are available in ``rcvd.code`` and ``rcvd.reason``.
+    sent (Optional[Close]): if a close frame was sent, its code and reason are
+    available in ``sent.code`` and ``sent.reason``.     rcvd_then_sent
+    (Optional[bool]): if close frames were received and         sent, this
+    attribute tells in which order this happened, from the         perspective
+    of this side of the connection.
     """
 
     def __init__(
@@ -132,53 +112,39 @@ class ConnectionClosed(WebSocketException):
 
 
 class ConnectionClosedError(ConnectionClosed):
-    """
-    Like :exc:`ConnectionClosed`, when the connection terminated with an error.
+    """Like :exc:`ConnectionClosed`, when the connection terminated with an
+    error.
 
     A close frame with a code other than 1000 (OK) or 1001 (going away) was
     received or sent, or the closing handshake didn't complete properly.
-
     """
 
 
 class ConnectionClosedOK(ConnectionClosed):
-    """
-    Like :exc:`ConnectionClosed`, when the connection terminated properly.
+    """Like :exc:`ConnectionClosed`, when the connection terminated properly.
 
     A close code with code 1000 (OK) or 1001 (going away) or without a code was
     received and sent.
-
     """
 
 
 class InvalidHandshake(WebSocketException):
-    """
-    Raised during the handshake when the WebSocket connection fails.
-
-    """
+    """Raised during the handshake when the WebSocket connection fails."""
 
 
 class SecurityError(InvalidHandshake):
-    """
-    Raised when a handshake request or response breaks a security rule.
+    """Raised when a handshake request or response breaks a security rule.
 
     Security limits are hard coded.
-
     """
 
 
 class InvalidMessage(InvalidHandshake):
-    """
-    Raised when a handshake request or response is malformed.
-
-    """
+    """Raised when a handshake request or response is malformed."""
 
 
 class InvalidHeader(InvalidHandshake):
-    """
-    Raised when an HTTP header doesn't have a valid format or value.
-
-    """
+    """Raised when an HTTP header doesn't have a valid format or value."""
 
     def __init__(self, name: str, value: Optional[str] = None) -> None:
         self.name = name
@@ -194,11 +160,9 @@ class InvalidHeader(InvalidHandshake):
 
 
 class InvalidHeaderFormat(InvalidHeader):
-    """
-    Raised when an HTTP header cannot be parsed.
+    """Raised when an HTTP header cannot be parsed.
 
     The format of the header doesn't match the grammar for that header.
-
     """
 
     def __init__(self, name: str, error: str, header: str, pos: int) -> None:
@@ -206,36 +170,25 @@ class InvalidHeaderFormat(InvalidHeader):
 
 
 class InvalidHeaderValue(InvalidHeader):
-    """
-    Raised when an HTTP header has a wrong value.
+    """Raised when an HTTP header has a wrong value.
 
     The format of the header is correct but a value isn't acceptable.
-
     """
 
 
 class InvalidOrigin(InvalidHeader):
-    """
-    Raised when the Origin header in a request isn't allowed.
-
-    """
+    """Raised when the Origin header in a request isn't allowed."""
 
     def __init__(self, origin: Optional[str]) -> None:
         super().__init__("Origin", origin)
 
 
 class InvalidUpgrade(InvalidHeader):
-    """
-    Raised when the Upgrade or Connection header isn't correct.
-
-    """
+    """Raised when the Upgrade or Connection header isn't correct."""
 
 
 class InvalidStatus(InvalidHandshake):
-    """
-    Raised when a handshake response rejects the WebSocket upgrade.
-
-    """
+    """Raised when a handshake response rejects the WebSocket upgrade."""
 
     def __init__(self, response: http11.Response) -> None:
         self.response = response
@@ -248,10 +201,7 @@ class InvalidStatus(InvalidHandshake):
 
 
 class InvalidStatusCode(InvalidHandshake):
-    """
-    Raised when a handshake response status code is invalid.
-
-    """
+    """Raised when a handshake response status code is invalid."""
 
     def __init__(self, status_code: int, headers: datastructures.Headers) -> None:
         self.status_code = status_code
@@ -262,17 +212,11 @@ class InvalidStatusCode(InvalidHandshake):
 
 
 class NegotiationError(InvalidHandshake):
-    """
-    Raised when negotiating an extension fails.
-
-    """
+    """Raised when negotiating an extension fails."""
 
 
 class DuplicateParameter(NegotiationError):
-    """
-    Raised when a parameter name is repeated in an extension header.
-
-    """
+    """Raised when a parameter name is repeated in an extension header."""
 
     def __init__(self, name: str) -> None:
         self.name = name
@@ -282,10 +226,7 @@ class DuplicateParameter(NegotiationError):
 
 
 class InvalidParameterName(NegotiationError):
-    """
-    Raised when a parameter name in an extension header is invalid.
-
-    """
+    """Raised when a parameter name in an extension header is invalid."""
 
     def __init__(self, name: str) -> None:
         self.name = name
@@ -295,10 +236,7 @@ class InvalidParameterName(NegotiationError):
 
 
 class InvalidParameterValue(NegotiationError):
-    """
-    Raised when a parameter value in an extension header is invalid.
-
-    """
+    """Raised when a parameter value in an extension header is invalid."""
 
     def __init__(self, name: str, value: Optional[str]) -> None:
         self.name = name
@@ -314,18 +252,15 @@ class InvalidParameterValue(NegotiationError):
 
 
 class AbortHandshake(InvalidHandshake):
-    """
-    Raised to abort the handshake on purpose and return an HTTP response.
+    """Raised to abort the handshake on purpose and return an HTTP response.
 
     This exception is an implementation detail.
 
-    The public API
-    is :meth:`~websockets.server.WebSocketServerProtocol.process_request`.
+    The public API is
+    :meth:`~websockets.server.WebSocketServerProtocol.process_request`.
 
-    Attributes:
-        status (~http.HTTPStatus): HTTP status code.
-        headers (Headers): HTTP response headers.
-        body (bytes): HTTP response body.
+    Attributes:     status (~http.HTTPStatus): HTTP status code.     headers
+    (Headers): HTTP response headers.     body (bytes): HTTP response body.
     """
 
     def __init__(
@@ -348,11 +283,9 @@ class AbortHandshake(InvalidHandshake):
 
 
 class RedirectHandshake(InvalidHandshake):
-    """
-    Raised when a handshake gets redirected.
+    """Raised when a handshake gets redirected.
 
     This exception is an implementation detail.
-
     """
 
     def __init__(self, uri: str) -> None:
@@ -363,21 +296,16 @@ class RedirectHandshake(InvalidHandshake):
 
 
 class InvalidState(WebSocketException, AssertionError):
-    """
-    Raised when an operation is forbidden in the current state.
+    """Raised when an operation is forbidden in the current state.
 
     This exception is an implementation detail.
 
     It should never be raised in normal circumstances.
-
     """
 
 
 class InvalidURI(WebSocketException):
-    """
-    Raised when connecting to a URI that isn't a valid WebSocket URI.
-
-    """
+    """Raised when connecting to a URI that isn't a valid WebSocket URI."""
 
     def __init__(self, uri: str, msg: str) -> None:
         self.uri = uri
@@ -388,17 +316,12 @@ class InvalidURI(WebSocketException):
 
 
 class PayloadTooBig(WebSocketException):
-    """
-    Raised when receiving a frame with a payload exceeding the maximum size.
-
-    """
+    """Raised when receiving a frame with a payload exceeding the maximum
+    size."""
 
 
 class ProtocolError(WebSocketException):
-    """
-    Raised when a frame breaks the protocol.
-
-    """
+    """Raised when a frame breaks the protocol."""
 
 
 WebSocketProtocolError = ProtocolError  # for backwards compatibility

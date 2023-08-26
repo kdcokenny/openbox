@@ -29,13 +29,13 @@ from openbox.config import settings
 from openbox.schema import CodeBoxFile, CodeBoxOutput, CodeBoxStatus
 
 
-class JupyterBox(BaseBox):
+class DockerBox(BaseBox):
     """LocalBox is a CodeBox implementation that runs code locally.
 
     This is useful for testing and development.
     """
 
-    _instance: Optional["JupyterBox"] = None
+    _instance: Optional["DockerBox"] = None
     _jupyter_pids: List[int] = []
 
     def __new__(cls, *args, **kwargs):
@@ -60,7 +60,7 @@ class JupyterBox(BaseBox):
         self.aiohttp_session: Optional[aiohttp.ClientSession] = None
 
     def start(self) -> CodeBoxStatus:
-        self.session_id = uuid4()
+        self.session_id = str(uuid4())
         os.makedirs(".codebox", exist_ok=True)
         self._check_port()
         if settings.VERBOSE:

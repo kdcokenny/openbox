@@ -19,26 +19,18 @@ else:
     # before 3.11 to keep support for the __final__ attribute.
     # See https://bugs.python.org/issue46342
     def final(f):
-        """This decorator can be used to indicate to type checkers that
-        the decorated method cannot be overridden, and decorated class
-        cannot be subclassed. For example:
+        """This decorator can be used to indicate to type checkers that the
+        decorated method cannot be overridden, and decorated class cannot be
+        subclassed. For example:
 
-            class Base:
-                @final
-                def done(self) -> None:
-                    ...
-            class Sub(Base):
-                def done(self) -> None:  # Error reported by type checker
-                    ...
-            @final
-            class Leaf:
-                ...
-            class Other(Leaf):  # Error reported by type checker
-                ...
+        class Base:     @final     def done(self) -> None:         ... class
+        Sub(Base):     def done(self) -> None:  # Error reported by type
+        checker         ... @final class Leaf:     ... class Other(Leaf):  #
+        Error reported by type checker     ...
 
-        There is no runtime checking of these properties. The decorator
-        sets the ``__final__`` attribute to ``True`` on the decorated object
-        to allow runtime introspection.
+        There is no runtime checking of these properties. The decorator sets
+        the ``__final__`` attribute to ``True`` on the decorated object to
+        allow runtime introspection.
         """
         try:
             f.__final__ = True
@@ -59,7 +51,7 @@ __all__ = ("timeout", "timeout_at", "Timeout")
 
 
 def timeout(delay: Optional[float]) -> "Timeout":
-    """timeout context manager.
+    """Timeout context manager.
 
     Useful in cases when you want to apply timeout logic around block
     of code or in cases when asyncio.wait_for is not suitable. For example:
@@ -91,8 +83,6 @@ def timeout_at(deadline: Optional[float]) -> "Timeout":
     >>> async with timeout_at(loop.time() + 10):
     ...     async with aiohttp.get('https://github.com') as r:
     ...         await r.text()
-
-
     """
     loop = asyncio.get_running_loop()
     return Timeout(deadline, loop)
@@ -206,13 +196,13 @@ class Timeout:
     def update(self, deadline: float) -> None:
         """Set deadline to absolute value.
 
-        deadline argument points on the time in the same clock system
-        as loop.time().
+        deadline argument points on the time in the same clock system as
+        loop.time().
 
         If new deadline is in the past the timeout is raised immediately.
 
-        Please note: it is not POSIX time but a time with
-        undefined starting base, e.g. the time of the system power on.
+        Please note: it is not POSIX time but a time with undefined starting
+        base, e.g. the time of the system power on.
         """
         if self._state == _State.EXIT:
             raise RuntimeError("cannot reschedule after exit from context manager")
