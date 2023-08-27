@@ -1,5 +1,6 @@
-from .box import JupyterBox
+from .box import JupyterBox, DockerBox
 
 __all__ = [
     "JupyterBox",
+    "DockerBox",
 ]

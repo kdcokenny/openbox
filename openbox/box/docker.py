@@ -7,15 +7,10 @@ this is the default CodeBox.
 import asyncio
 import json
 import os
-import signal
-import subprocess
-import sys
 import time
-from asyncio.subprocess import Process
-from pathlib import Path
+import docker
 from typing import List, Optional, Union
-from uuid import uuid4
-from importlib.metadata import PackageNotFoundError, distribution
+from uuid import uuid4, UUID
 import aiohttp
 import requests  # type: ignore
 from openbox.websockets.client import WebSocketClientProtocol
@@ -27,6 +22,8 @@ from openbox.websockets.sync.client import connect as ws_connect_sync
 from openbox.box import BaseBox
 from openbox.config import settings
 from openbox.schema import CodeBoxFile, CodeBoxOutput, CodeBoxStatus
+
+DOCKER_IMAGE = "jupyterbox_image"
 
 
 class DockerBox(BaseBox):
@@ -56,41 +53,29 @@ class DockerBox(BaseBox):
         self.port: int = 8888
         self.kernel_id: Optional[dict] = None
         self.ws: Union[WebSocketClientProtocol, ClientConnection, None] = None
-        self.jupyter: Union[Process, subprocess.Popen, None] = None
+        self.container: Optional[docker.models.containers.Container] = None
+        self.docker_client = docker.from_env()
         self.aiohttp_session: Optional[aiohttp.ClientSession] = None
 
     def start(self) -> CodeBoxStatus:
-        self.session_id = str(uuid4())
+        self.session_id = uuid4()
         os.makedirs(".codebox", exist_ok=True)
         self._check_port()
         if settings.VERBOSE:
             print("Starting kernel...")
-            out = None
-        else:
-            out = subprocess.PIPE
-        self._check_installed()
+
         try:
-            python = Path(sys.executable).absolute()
-            self.jupyter = subprocess.Popen(
-                [
-                    python,
-                    "-m",
-                    "jupyter",
-                    "kernelgateway",
-                    "--KernelGatewayApp.ip='0.0.0.0'",
-                    f"--KernelGatewayApp.port={self.port}",
-                ],
-                stdout=out,
-                stderr=out,
-                cwd=".codebox",
+            self.container = self.docker_client.containers.run(
+                DOCKER_IMAGE,
+                detach=True,
+                ports={f"{self.port}/tcp": self.port},
+                environment=["KernelGatewayApp.ip='0.0.0.0'"],
+                labels={"session_id": str(self.session_id)},
             )
-            self._jupyter_pids.append(self.jupyter.pid)
-        except FileNotFoundError:
-            raise ModuleNotFoundError(
-                "Jupyter Kernel Gateway not found, please install it with:\n"
-                "`pip install jupyter_kernel_gateway`\n"
-                "to use the LocalBox."
-            )
+        except docker.errors.ContainerError as e:
+            print(f"Failed to start container: {e}")
+            return CodeBoxStatus(status="error")
+
         while True:
             try:
                 response = requests.get(self.kernel_url, timeout=270)
@@ -101,6 +86,7 @@ class DockerBox(BaseBox):
             if settings.VERBOSE:
                 print("Waiting for kernel to start...")
             time.sleep(1)
+
         self._connect()
         return CodeBoxStatus(status="started")
 
@@ -130,49 +116,31 @@ class DockerBox(BaseBox):
                 self.port += 1
                 self._check_port()
 
-    def _check_installed(self) -> None:
-        try:
-            distribution("jupyter-kernel-gateway")
-        except PackageNotFoundError:
-            print(
-                "Make sure 'jupyter-kernel-gateway' is installed "
-                "when using without a CODEBOX_API_KEY.\n"
-                "You can install it with 'pip install jupyter-kernel-gateway'."
-            )
-            raise
-
     async def astart(self) -> CodeBoxStatus:
         self.session_id = uuid4()
         os.makedirs(".codebox", exist_ok=True)
-        self.aiohttp_session = aiohttp.ClientSession()
         await self._acheck_port()
         if settings.VERBOSE:
-            print("Starting kernel...")
-            out = None
-        else:
-            out = asyncio.subprocess.PIPE
-        self._check_installed()
-        python = Path(sys.executable).absolute()
+            print("Starting kernel asynchronously...")
+
         try:
-            self.jupyter = await asyncio.create_subprocess_exec(
-                python,
-                "-m",
-                "jupyter",
-                "kernelgateway",
-                "--KernelGatewayApp.ip='0.0.0.0'",
-                f"--KernelGatewayApp.port={self.port}",
-                stdout=out,
-                stderr=out,
-                cwd=".codebox",
+            loop = asyncio.get_event_loop()
+            self.container = await loop.run_in_executor(
+                None,
+                lambda: self.docker_client.containers.run(
+                    DOCKER_IMAGE,
+                    detach=True,
+                    ports={f"{self.port}/tcp": self.port},
+                    environment=["KernelGatewayApp.ip='0.0.0.0'"],
+                    labels={"session_id": str(self.session_id)},
+                ),
             )
-            self._jupyter_pids.append(self.jupyter.pid)
-        except Exception as e:
-            print(e)
-            raise ModuleNotFoundError(
-                "Jupyter Kernel Gateway not found, please install it with:\n"
-                "`pip install jupyter_kernel_gateway`\n"
-                "to use the LocalBox."
-            )
+        except docker.errors.ContainerError as e:
+            print(f"Failed to start container: {e}")
+            return CodeBoxStatus(status="error")
+
+        time.sleep(2)
+        self.aiohttp_session = aiohttp.ClientSession()
         while True:
             try:
                 response = await self.aiohttp_session.get(self.kernel_url)
@@ -180,11 +148,10 @@ class DockerBox(BaseBox):
                     break
             except aiohttp.ClientConnectorError:
                 pass
-            except aiohttp.ServerDisconnectedError:
-                pass
             if settings.VERBOSE:
                 print("Waiting for kernel to start...")
             await asyncio.sleep(1)
+
         await self._aconnect()
         return CodeBoxStatus(status="started")
 
@@ -526,17 +493,10 @@ class DockerBox(BaseBox):
         return CodeBoxStatus(status="restarted")
 
     def stop(self) -> CodeBoxStatus:
-        try:
-            if self.jupyter is not None:
-                self.jupyter.terminate()
-                self.jupyter.wait()
-                self.jupyter = None
-                time.sleep(2)
-            else:
-                for pid in self._jupyter_pids:
-                    os.kill(pid, signal.SIGTERM)
-        except ProcessLookupError:
-            pass
+        if self.container is not None:
+            self.container.stop()
+            self.container.remove()
+            self.container = None
 
         if self.ws is not None:
             try:
@@ -551,27 +511,65 @@ class DockerBox(BaseBox):
 
         return CodeBoxStatus(status="stopped")
 
+        return CodeBoxStatus(status="stopped")
+
     async def astop(self) -> CodeBoxStatus:
-        if self.jupyter is not None:
-            self.jupyter.terminate()
-            self.jupyter = None
-            await asyncio.sleep(2)
+        print(f"Stopping {self.session_id}")
+
+        if self.container is not None:
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, lambda: self.container.stop())
+            await loop.run_in_executor(None, lambda: self.container.remove())
+            self.container = None
 
         if self.ws is not None:
             try:
-                if isinstance(self.ws, WebSocketClientProtocol):
-                    await self.ws.close()
-                else:
-                    self.ws.close()
+                await self.ws.close()
             except ConnectionClosedError:
                 pass
             self.ws = None
 
-        if self.aiohttp_session is not None:
+        if self.aiohttp_session:
             await self.aiohttp_session.close()
             self.aiohttp_session = None
 
         return CodeBoxStatus(status="stopped")
+
+    @classmethod
+    def from_id(cls, session_id: Union[int, UUID], **kwargs) -> "DockerBox":
+        print("Entering from_id method...")
+
+        kwargs["session_id"] = (
+            UUID(int=session_id) if isinstance(session_id, int) else session_id
+        )
+
+        print(f"Converted session_id: {kwargs['session_id']}")
+
+        instance = cls(**kwargs)
+        print("Instance of DockerBox created.")
+
+        # Retrieve the container with the given session_id
+        print("Attempting to list containers with the given session_id...")
+        container_list = docker.from_env().containers.list(
+            filters={"label": f"session_id={kwargs['session_id']}"}
+        )
+
+        print(f"Containers found with given session_id: {len(container_list)}")
+
+        if container_list:
+            print("Container found. Setting it to instance.container.")
+            instance.container = container_list[0]
+        else:
+            print(
+                "No container found with the given session_id. "
+                "Raising ValueError."
+            )
+            raise ValueError(
+                f"No container found for session_id {kwargs['session_id']}"
+            )
+
+        print("Exiting from_id method.")
+        return instance
 
     @property
     def kernel_url(self) -> str:
