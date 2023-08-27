@@ -707,6 +707,17 @@ pyyaml = ">=5.1"
 virtualenv = ">=20.10.0"
 
 [[package]]
+name = "print-position"
+version = "1.0.1"
+description = "A cool python package to add the line number and file name in the print statements."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "print_position-1.0.1-py3-none-any.whl", hash = "sha256:353eecb54068d95685141c295ae62691dc816d9ad9e3a435a1fc60fb8d274137"},
+    {file = "print_position-1.0.1.tar.gz", hash = "sha256:ce519a0396a8dd21502163829df41a0895347c1d3184979c949df15239c403a2"},
+]
+
+[[package]]
 name = "pycodestyle"
 version = "2.11.0"
 description = "Python style guide checker"
@@ -1204,4 +1215,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "a05a5bd00a7f37f946cb14461a593c7bf74b5ecd658a8c728e44f78162a922a9"
+content-hash = "e1e8c5ea27d7f7475a5c651447b1d9c061214b2a42205964b4c507ad036f2d10"

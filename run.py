@@ -1,7 +1,7 @@
 from openbox import DockerBox  # Make sure your DockerBox is correctly imported
 import subprocess
 
-
+from printPosition.printPosition import printPosition as print
 def run_docker_ps():
     """Runs the 'docker ps' command and prints its output."""
     try:
@@ -70,7 +70,7 @@ def session_restoring():
 
     try:
         restored_session = DockerBox.from_id(session_id=session_id)
-        print(restored_session.run("print('hello')"))
+        print(restored_session.run("print(hello)"))
 
         container_id = get_container_id()
         run_docker_ps()
