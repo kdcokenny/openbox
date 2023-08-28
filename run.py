@@ -12,9 +12,9 @@ def session_restoring():
     del session
 
     try:
-        restored_session = DockerBox.from_id(session_id=session_id)
-        restored_session.update_kernal_data(kernel_id)
-        restored_session.connect_kernel_id()
+        restored_session = DockerBox.from_id(
+            session_id=session_id, kernel_id=kernel_id
+        )
         print(restored_session.run("print(hello)"))
 
     finally:

@@ -50,7 +50,7 @@ class DockerBox(BaseBox):
     def __init__(self, /, **kwargs) -> None:
         super().__init__(session_id=kwargs.pop("session_id", None))
         self.port: int = 8888
-        self.kernel_id: Optional[dict] = None
+        self.kernel_id: Optional[str] = kwargs.pop("kernel_id", None)
         self.ws: Union[WebSocketClientProtocol, ClientConnection, None] = None
         self.container: Optional[docker.models.containers.Container] = None
         self.docker_client = docker.from_env()
@@ -65,10 +65,6 @@ class DockerBox(BaseBox):
                 loop = asyncio.new_event_loop()
                 loop.run_until_complete(self.aiohttp_session.close())
                 self.aiohttp_session = None
-
-    # added this function to update the kernal id
-    def update_kernal_data(self, kernel_id):
-        self.kernel_id = kernel_id
 
     # use function to update the last used time of the
     def use(self):
@@ -108,27 +104,20 @@ class DockerBox(BaseBox):
         return CodeBoxStatus(status="started")
 
     def _connect(self) -> None:
-        response = requests.post(
-            f"{self.kernel_url}/kernels",
-            headers={"Content-Type": "application/json"},
-            timeout=270,
-        )
-        self.kernel_id = response.json()["id"]
+        if not self.kernel_id:
+            response = requests.post(
+                f"{self.kernel_url}/kernels",
+                headers={"Content-Type": "application/json"},
+                timeout=270,
+            )
+            self.kernel_id = response.json()["id"]
+
         if self.kernel_id is None:
             raise Exception("Could not start kernel")
 
         self.ws = ws_connect_sync(
             f"{self.ws_url}/kernels/{self.kernel_id}/channels"
         )
-
-    def connect_kernel_id(self):
-        if self.kernel_id is None:
-            raise Exception("Could not start kernel")
-
-        self.ws = ws_connect_sync(
-            f"{self.ws_url}/kernels/{self.kernel_id}/channels"
-        )
-        self.use()
 
     def _check_port(self) -> None:
         try:
@@ -570,39 +559,32 @@ class DockerBox(BaseBox):
         return CodeBoxStatus(status="stopped")
 
     @classmethod
-    def from_id(cls, session_id: Union[int, UUID], **kwargs) -> "DockerBox":
-        print("Entering from_id method...")
+    def from_id(
+        cls, session_id: Union[int, UUID], kernel_id: Optional[str], **kwargs
+    ) -> "DockerBox":
+        if kernel_id:
+            kwargs["kernel_id"] = kernel_id
 
         kwargs["session_id"] = (
             UUID(int=session_id) if isinstance(session_id, int) else session_id
         )
 
-        print(f"Converted session_id: {kwargs['session_id']}")
+        print(f"Kwargs: {kwargs}")
 
         instance = cls(**kwargs)
-        print("Instance of DockerBox created.")
 
         # Retrieve the container with the given session_id
-        print("Attempting to list containers with the given session_id...")
         container_list = docker.from_env().containers.list(
             filters={"label": f"session_id={kwargs['session_id']}"}
         )
 
-        print(f"Containers found with given session_id: {len(container_list)}")
-
         if container_list:
-            print("Container found. Setting it to instance.container.")
             instance.container = container_list[0]
         else:
-            print(
-                "No container found with the given session_id. "
-                "Raising ValueError."
-            )
             raise ValueError(
                 f"No container found for session_id {kwargs['session_id']}"
             )
 
-        print("Exiting from_id method.")
         return instance
 
     @property
