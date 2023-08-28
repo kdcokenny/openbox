@@ -556,7 +556,7 @@ class DockerBox(BaseBox):
 
     @classmethod
     def from_id(
-        cls, session_id: Union[int, UUID], kernel_id: Optional[str], **kwargs
+        cls, session_id: Union[int, UUID], kernel_id: Optional[UUID], **kwargs
     ) -> "DockerBox":
         if kernel_id:
             kwargs["kernel_id"] = kernel_id
