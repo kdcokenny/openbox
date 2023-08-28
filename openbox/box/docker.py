@@ -3,7 +3,7 @@
 This is useful for testing and development.c In case you don't put an api_key,
 this is the default CodeBox.
 """
-
+from printPosition.printPosition import printPosition as print
 import asyncio
 import json
 import os
@@ -57,6 +57,10 @@ class DockerBox(BaseBox):
         self.docker_client = docker.from_env()
         self.aiohttp_session: Optional[aiohttp.ClientSession] = None
 
+    # added this function to update the kernal id
+    def update_kernal_data(self, kernel_id):
+        self.kernel_id = kernel_id
+        
     def start(self) -> CodeBoxStatus:
         self.session_id = uuid4()
         os.makedirs(".codebox", exist_ok=True)
@@ -97,6 +101,15 @@ class DockerBox(BaseBox):
             timeout=270,
         )
         self.kernel_id = response.json()["id"]
+        if self.kernel_id is None:
+            raise Exception("Could not start kernel")
+
+        self.ws = ws_connect_sync(
+            f"{self.ws_url}/kernels/{self.kernel_id}/channels"
+        )
+
+    # added this function to call in the connect with the preset kernel id of the DockerBox
+    def connect_kernel_id(self):
         if self.kernel_id is None:
             raise Exception("Could not start kernel")
 

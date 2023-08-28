@@ -49,7 +49,10 @@ def session_restoring():
     session = DockerBox()
     session.start()
 
+    # copying the kernel id and the session id
+    kernel_id = session.kernel_id
     session_id = session.session_id
+    
     print(f"Session ID: {session_id}")
     assert session_id is not None
 
@@ -58,11 +61,11 @@ def session_restoring():
     if container_id:
         print_docker_logs(container_id)
 
-    session.run('hello = "Hello World!"')
-    print(session.run("print(hello)"))
+    # setting the value to the variable hello
+    session.run("hello = 'Hello World!'")
 
     del session
-
+    
     container_id = get_container_id()
     run_docker_ps()
     if container_id:
@@ -70,9 +73,16 @@ def session_restoring():
 
     try:
         restored_session = DockerBox.from_id(session_id=session_id)
+        
+        # updating the kernel id and reconnecting with the new function
+        restored_session.update_kernal_data( kernel_id)
+        restored_session.connect_kernel_id()
+
+        # printing the preset value
         print(restored_session.run("print(hello)"))
 
         container_id = get_container_id()
+        
         run_docker_ps()
         if container_id:
             print_docker_logs(container_id)
