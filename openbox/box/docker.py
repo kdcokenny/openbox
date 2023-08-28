@@ -559,7 +559,11 @@ class DockerBox(BaseBox):
         cls, session_id: Union[int, UUID], kernel_id: Optional[UUID], **kwargs
     ) -> "DockerBox":
         if kernel_id:
-            kwargs["kernel_id"] = kernel_id
+            kwargs["kernel_id"] = (
+                UUID(int=kernel_id)
+                if isinstance(kernel_id, int)
+                else kernel_id
+            )
 
         kwargs["session_id"] = (
             UUID(int=session_id) if isinstance(session_id, int) else session_id
