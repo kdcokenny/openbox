@@ -46,7 +46,7 @@ class DockerBox(BaseBox):
     def __init__(self, /, **kwargs) -> None:
         super().__init__(session_id=kwargs.pop("session_id", None))
         self.port: int = 8888
-        self.kernel_id: Optional[str] = kwargs.pop("kernel_id", None)
+        self.kernel_id: Optional[UUID] = kwargs.pop("kernel_id", None)
         self.ws: Union[WebSocketClientProtocol, ClientConnection, None] = None
         self.container: Optional[docker.models.containers.Container] = None
         self.docker_client = docker.from_env()
