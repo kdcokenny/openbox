@@ -1,17 +1,19 @@
-"""CodeBox API Config:
-
+"""
+CodeBox API Config:
 Automatically loads environment variables from .env file
 """
 
 from dotenv import load_dotenv
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 # .env file
 load_dotenv("./.env")
 
 
-class CodeBoxSettings(BaseSettings):  # type: ignore
-    """CodeBox API Config."""
+class CodeBoxSettings(BaseSettings):
+    """
+    CodeBox API Config
+    """
 
     VERBOSE: bool = False
     SHOW_INFO: bool = True
