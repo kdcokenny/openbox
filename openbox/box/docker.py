@@ -219,17 +219,18 @@ class DockerBox(BaseBox):
         if not self.kernel_id:
             self._connect()
 
+        self.use()
         return CodeBoxStatus(
             status="running"
             if self.kernel_id
             and requests.get(self.kernel_url, timeout=270).status_code == 200
             else "stopped"
         )
-        self.use()
 
     async def astatus(self) -> CodeBoxStatus:
         if not self.kernel_id:
             await self._aconnect()
+        self.use()
         return CodeBoxStatus(
             status="running"
             if self.kernel_id
@@ -237,7 +238,6 @@ class DockerBox(BaseBox):
             and (await self.aiohttp_session.get(self.kernel_url)).status == 200
             else "stopped"
         )
-        self.use()
 
     def run(
         self,
@@ -292,6 +292,7 @@ class DockerBox(BaseBox):
                 }
             )
         )
+        self.use()
         result = ""
         while True:
             try:
@@ -364,7 +365,6 @@ class DockerBox(BaseBox):
                 if settings.VERBOSE:
                     print("Error:\n", error)
                 return CodeBoxOutput(type="error", content=error)
-        self.use()
 
     async def arun(
         self,
@@ -416,6 +416,7 @@ class DockerBox(BaseBox):
                 }
             )
         )
+        self.use()
         result = ""
         while True:
             try:
@@ -480,7 +481,6 @@ class DockerBox(BaseBox):
                 if settings.VERBOSE:
                     print("Error:\n", error)
                 return CodeBoxOutput(type="error", content=error)
-        self.use()
 
     def upload(self, file_name: str, content: bytes) -> CodeBoxStatus:
         os.makedirs(".codebox", exist_ok=True)
@@ -523,12 +523,12 @@ class DockerBox(BaseBox):
         return await asyncio.to_thread(self.list_files)
 
     def restart(self) -> CodeBoxStatus:
-        return CodeBoxStatus(status="restarted")
         self.use()
+        return CodeBoxStatus(status="restarted")
 
     async def arestart(self) -> CodeBoxStatus:
-        return CodeBoxStatus(status="restarted")
         self.use()
+        return CodeBoxStatus(status="restarted")
 
     def stop(self) -> CodeBoxStatus:
         if self.container is not None:
@@ -607,8 +607,8 @@ class DockerBox(BaseBox):
             )
 
         print("Exiting from_id method.")
-        return instance
         self.use()
+        return instance
 
     @property
     def kernel_url(self) -> str:
