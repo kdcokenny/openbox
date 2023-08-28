@@ -582,11 +582,3 @@ class JupyterBox(BaseBox):
     def ws_url(self) -> str:
         """Return the url of the websocket."""
         return f"ws://localhost:{self.port}/api"
-
-    def __del__(self):
-        self.stop()
-
-        if self.aiohttp_session is not None:
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(self.aiohttp_session.close())
-            self.aiohttp_session = None

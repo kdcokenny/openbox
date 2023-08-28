@@ -3,7 +3,6 @@
 This is useful for testing and development.c In case you don't put an api_key,
 this is the default CodeBox.
 """
-from printPosition.printPosition import printPosition as print
 import asyncio
 import json
 import os
@@ -60,23 +59,21 @@ class DockerBox(BaseBox):
 
     # destructor
     def __del__(self):
-        if time.time() - self.last_used_time > 100*60:
-            # print("Object has not been used for more than 100 minutes and will be destroyed.")
+        if time.time() - self.last_used_time > 100 * 60:
             self.stop()
             if self.aiohttp_session is not None:
                 loop = asyncio.new_event_loop()
                 loop.run_until_complete(self.aiohttp_session.close())
                 self.aiohttp_session = None
 
-
     # added this function to update the kernal id
     def update_kernal_data(self, kernel_id):
         self.kernel_id = kernel_id
-    
+
     # use function to update the last used time of the
     def use(self):
         self.last_used_time = time.time()
-        
+
     def start(self) -> CodeBoxStatus:
         self.session_id = uuid4()
         os.makedirs(".codebox", exist_ok=True)
@@ -124,7 +121,6 @@ class DockerBox(BaseBox):
             f"{self.ws_url}/kernels/{self.kernel_id}/channels"
         )
 
-    # added this function to call in the connect with the preset kernel id of the DockerBox
     def connect_kernel_id(self):
         if self.kernel_id is None:
             raise Exception("Could not start kernel")
@@ -607,7 +603,6 @@ class DockerBox(BaseBox):
             )
 
         print("Exiting from_id method.")
-        self.use()
         return instance
 
     @property
