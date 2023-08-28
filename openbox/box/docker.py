@@ -56,10 +56,26 @@ class DockerBox(BaseBox):
         self.container: Optional[docker.models.containers.Container] = None
         self.docker_client = docker.from_env()
         self.aiohttp_session: Optional[aiohttp.ClientSession] = None
+        self.last_used_time = time.time()
+
+    # destructor
+    def __del__(self):
+        if time.time() - self.last_used_time > 100*60:
+            # print("Object has not been used for more than 100 minutes and will be destroyed.")
+            self.stop()
+            if self.aiohttp_session is not None:
+                loop = asyncio.new_event_loop()
+                loop.run_until_complete(self.aiohttp_session.close())
+                self.aiohttp_session = None
+
 
     # added this function to update the kernal id
     def update_kernal_data(self, kernel_id):
         self.kernel_id = kernel_id
+    
+    # use function to update the last used time of the
+    def use(self):
+        self.last_used_time = time.time()
         
     def start(self) -> CodeBoxStatus:
         self.session_id = uuid4()
@@ -116,6 +132,7 @@ class DockerBox(BaseBox):
         self.ws = ws_connect_sync(
             f"{self.ws_url}/kernels/{self.kernel_id}/channels"
         )
+        self.use()
 
     def _check_port(self) -> None:
         try:
@@ -208,6 +225,7 @@ class DockerBox(BaseBox):
             and requests.get(self.kernel_url, timeout=270).status_code == 200
             else "stopped"
         )
+        self.use()
 
     async def astatus(self) -> CodeBoxStatus:
         if not self.kernel_id:
@@ -219,6 +237,7 @@ class DockerBox(BaseBox):
             and (await self.aiohttp_session.get(self.kernel_url)).status == 200
             else "stopped"
         )
+        self.use()
 
     def run(
         self,
@@ -226,6 +245,7 @@ class DockerBox(BaseBox):
         file_path: Optional[os.PathLike] = None,
         retry=3,
     ) -> CodeBoxOutput:
+        self.use()
         if not code and not file_path:
             raise ValueError("Code or file_path must be specified!")
 
@@ -344,6 +364,7 @@ class DockerBox(BaseBox):
                 if settings.VERBOSE:
                     print("Error:\n", error)
                 return CodeBoxOutput(type="error", content=error)
+        self.use()
 
     async def arun(
         self,
@@ -351,6 +372,7 @@ class DockerBox(BaseBox):
         file_path: Optional[os.PathLike] = None,
         retry=3,
     ) -> CodeBoxOutput:
+        self.use()
         if file_path:
             raise NotImplementedError(
                 "Reading from file is not supported in async mode"
@@ -458,6 +480,7 @@ class DockerBox(BaseBox):
                 if settings.VERBOSE:
                     print("Error:\n", error)
                 return CodeBoxOutput(type="error", content=error)
+        self.use()
 
     def upload(self, file_name: str, content: bytes) -> CodeBoxStatus:
         os.makedirs(".codebox", exist_ok=True)
@@ -501,9 +524,11 @@ class DockerBox(BaseBox):
 
     def restart(self) -> CodeBoxStatus:
         return CodeBoxStatus(status="restarted")
+        self.use()
 
     async def arestart(self) -> CodeBoxStatus:
         return CodeBoxStatus(status="restarted")
+        self.use()
 
     def stop(self) -> CodeBoxStatus:
         if self.container is not None:
@@ -583,6 +608,7 @@ class DockerBox(BaseBox):
 
         print("Exiting from_id method.")
         return instance
+        self.use()
 
     @property
     def kernel_url(self) -> str:
@@ -593,11 +619,3 @@ class DockerBox(BaseBox):
     def ws_url(self) -> str:
         """Return the url of the websocket."""
         return f"ws://localhost:{self.port}/api"
-
-    def __del__(self):
-        self.stop()
-
-        if self.aiohttp_session is not None:
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(self.aiohttp_session.close())
-            self.aiohttp_session = None
