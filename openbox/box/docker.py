@@ -26,9 +26,10 @@ DOCKER_IMAGE = "jupyterbox_image"
 
 
 class DockerBox(BaseBox):
-    """LocalBox is a CodeBox implementation that runs code locally.
+    """DockerBox is a CodeBox implementation that
+        runs code in a docker container.
 
-    This is useful for testing and development.
+    This is useful for both prod and testing.
     """
 
     _instance: Optional["DockerBox"] = None
@@ -39,12 +40,7 @@ class DockerBox(BaseBox):
             cls._instance = super().__new__(cls)
         else:
             if settings.SHOW_INFO:
-                print(
-                    "INFO: Using a LocalBox which is not fully isolated\n"
-                    "      and not scalable across multiple users.\n"
-                    "      Make sure to use a CODEBOX_API_KEY in production.\n"
-                    "      Set envar SHOW_INFO=False to not see this again.\n"
-                )
+                print("INFO: Using the DockerBox\n")
         return cls._instance
 
     def __init__(self, /, **kwargs) -> None:
