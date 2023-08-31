@@ -45,7 +45,7 @@ class DockerBox(BaseBox):
 
     def __init__(self, /, **kwargs) -> None:
         super().__init__(session_id=kwargs.pop("session_id", None))
-        self.port: int = 49152
+        self.port: int = 8888
         self.kernel_id: Optional[UUID] = kwargs.pop("kernel_id", None)
         self.ws: Union[WebSocketClientProtocol, ClientConnection, None] = None
         self.container: Optional[docker.models.containers.Container] = None
@@ -67,7 +67,7 @@ class DockerBox(BaseBox):
     def start(self) -> CodeBoxStatus:
         self.session_id = uuid4()
         os.makedirs(".codebox", exist_ok=True)
-        self.port = self._check_port()
+        self._check_port()
 
         if settings.VERBOSE:
             print("Starting kernel...")
@@ -75,11 +75,18 @@ class DockerBox(BaseBox):
         try:
             self.container = self.docker_client.containers.run(
                 DOCKER_IMAGE,
+                command=[
+                    "jupyter",
+                    "kernelgateway",
+                    "--KernelGatewayApp.ip=0.0.0.0",
+                    f"--KernelGatewayApp.port={self.port}",
+                    "--debug",
+                ],
                 detach=True,
                 ports={f"{self.port}/tcp": self.port},
-                environment=["KernelGatewayApp.ip='0.0.0.0'"],
                 labels={"session_id": str(self.session_id)},
             )
+
         except docker.errors.ContainerError as e:
             print(f"Failed to start container: {e}")
             return CodeBoxStatus(status="error")
@@ -567,7 +574,11 @@ class DockerBox(BaseBox):
 
     @classmethod
     def from_id(
-        cls, session_id: Union[int, UUID], kernel_id: Optional[UUID], **kwargs
+        cls,
+        session_id: Union[int, UUID],
+        kernel_id: Optional[UUID],
+        port: int,
+        **kwargs,
     ) -> "DockerBox":
         if kernel_id:
             kwargs["kernel_id"] = (
@@ -584,7 +595,8 @@ class DockerBox(BaseBox):
 
         instance = cls(**kwargs)
 
-        # Retrieve the container with the given session_id
+        instance.port = port
+
         container_list = docker.from_env().containers.list(
             filters={"label": f"session_id={kwargs['session_id']}"}
         )
@@ -606,4 +618,5 @@ class DockerBox(BaseBox):
     @property
     def ws_url(self) -> str:
         """Return the url of the websocket."""
+        print(f"ws://localhost:{self.port}/api")
         return f"ws://localhost:{self.port}/api"
