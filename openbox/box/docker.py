@@ -45,7 +45,7 @@ class DockerBox(BaseBox):
 
     def __init__(self, /, **kwargs) -> None:
         super().__init__(session_id=kwargs.pop("session_id", None))
-        self.port: int = 8888
+        self.port: int = 49152
         self.kernel_id: Optional[UUID] = kwargs.pop("kernel_id", None)
         self.ws: Union[WebSocketClientProtocol, ClientConnection, None] = None
         self.container: Optional[docker.models.containers.Container] = None
@@ -55,12 +55,10 @@ class DockerBox(BaseBox):
 
     # destructor
     def __del__(self):
-        if time.time() - self.last_used_time > 100 * 60:
-            self.stop()
-            if self.aiohttp_session is not None:
-                loop = asyncio.new_event_loop()
-                loop.run_until_complete(self.aiohttp_session.close())
-                self.aiohttp_session = None
+        if self.aiohttp_session is not None:
+            loop = asyncio.new_event_loop()
+            loop.run_until_complete(self.aiohttp_session.close())
+            self.aiohttp_session = None
 
     # use function to update the last used time of the
     def use(self):
@@ -69,7 +67,8 @@ class DockerBox(BaseBox):
     def start(self) -> CodeBoxStatus:
         self.session_id = uuid4()
         os.makedirs(".codebox", exist_ok=True)
-        self._check_port()
+        self.port = self._check_port()
+
         if settings.VERBOSE:
             print("Starting kernel...")
 
@@ -115,17 +114,29 @@ class DockerBox(BaseBox):
             f"{self.ws_url}/kernels/{self.kernel_id}/channels"
         )
 
-    def _check_port(self) -> None:
-        try:
-            response = requests.get(
-                f"http://localhost:{self.port}", timeout=270
-            )
-        except requests.exceptions.ConnectionError:
-            pass
-        else:
-            if response.status_code == 200:
+    def _check_port(self) -> int:
+        max_port_limit = 65535
+        initial_port = self.port
+
+        while True:
+            print(f"Checking port {self.port}...")
+            try:
+                response = requests.get(
+                    f"http://localhost:{self.port}", timeout=5
+                )
+                print(f"Received status code: {response.status_code}")
+            except (
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+            ):
+                print(f"Port {self.port} is free.")
+                return self.port
+            else:
+                print(f"Port {self.port} is occupied. Incrementing...")
                 self.port += 1
-                self._check_port()
+                if self.port > max_port_limit:
+                    self.port = initial_port
+                    raise ValueError("Could not find an available port")
 
     async def astart(self) -> CodeBoxStatus:
         self.session_id = uuid4()
