@@ -22,7 +22,7 @@ from openbox.box import BaseBox
 from openbox.config import settings
 from openbox.schema import CodeBoxFile, CodeBoxOutput, CodeBoxStatus
 
-DOCKER_IMAGE = "jupyterbox_image"
+DOCKER_IMAGE = "codebox"
 
 
 class DockerBox(BaseBox):
